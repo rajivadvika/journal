@@ -24,7 +24,11 @@
   --shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
-*{box-sizing:border-box;font-family: ui-sans-serif, system-ui;}
+*{
+  box-sizing:border-box;
+  font-family: ui-sans-serif, system-ui;
+}
+
 body{
   margin:0;
   background:var(--bg);
@@ -39,66 +43,84 @@ body{
 }
 
 /* Sidebar */
+
 .sidebar{
   padding:20px;
   border-right:1px solid rgba(150,150,150,0.1);
   backdrop-filter: blur(10px);
+  overflow:auto;
 }
 
 .logo{
-  font-size:20px;
-  font-weight:600;
+  font-size:22px;
+  font-weight:700;
   margin-bottom:20px;
 }
 
 .btn{
   background:var(--card);
   border:none;
-  padding:10px 12px;
-  border-radius:10px;
+  padding:12px;
+  border-radius:12px;
   cursor:pointer;
-  margin:5px 0;
+  margin:6px 0;
   width:100%;
   color:var(--text);
   box-shadow:var(--shadow);
-  transition:0.2s;
+  transition:0.25s ease;
+  text-align:left;
 }
-.btn:hover{transform:translateY(-2px);}
+
+.btn:hover{
+  transform:translateY(-2px);
+}
 
 .small{
   font-size:12px;
   color:var(--muted);
+  margin-bottom:8px;
 }
 
 /* Main */
+
 .main{
   padding:30px;
   overflow:auto;
 }
 
-/* Entry Card */
+/* Cards */
+
 .card{
   background:var(--card);
   box-shadow:var(--shadow);
-  border-radius:18px;
-  padding:20px;
+  border-radius:22px;
+  padding:22px;
   backdrop-filter: blur(12px);
   animation:fade 0.5s ease;
 }
 
 @keyframes fade{
-  from{opacity:0;transform:translateY(10px);}
-  to{opacity:1;transform:translateY(0);}
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
+
+/* Textarea */
 
 textarea{
   width:100%;
-  height:200px;
+  height:220px;
   border:none;
   outline:none;
   background:transparent;
   resize:none;
   font-size:16px;
+  line-height:1.7;
   color:var(--text);
 }
 
@@ -109,29 +131,45 @@ textarea{
   margin-top:10px;
 }
 
+/* Tags */
+
 .tag{
-  padding:6px 10px;
+  padding:6px 12px;
   border-radius:999px;
   background:rgba(120,120,120,0.1);
-  cursor:pointer;
   font-size:12px;
 }
 
+/* Mood */
+
 .mood{
-  font-size:22px;
+  font-size:24px;
   cursor:pointer;
-  opacity:0.6;
+  opacity:0.5;
+  transition:0.2s ease;
 }
-.mood.active{opacity:1;transform:scale(1.2);}
+
+.mood:hover{
+  transform:scale(1.15);
+}
+
+.mood.active{
+  opacity:1;
+  transform:scale(1.2);
+}
+
+/* Inputs */
 
 input{
-  padding:8px;
-  border-radius:10px;
+  padding:10px;
+  border-radius:12px;
   border:none;
   outline:none;
   background:rgba(120,120,120,0.1);
   color:var(--text);
 }
+
+/* Topbar */
 
 .topbar{
   display:flex;
@@ -141,195 +179,549 @@ input{
 }
 
 /* Calendar */
+
 .calendar{
   display:grid;
   grid-template-columns: repeat(7,1fr);
-  gap:8px;
+  gap:10px;
 }
 
 .day{
-  padding:10px;
-  border-radius:10px;
+  padding:12px;
+  border-radius:12px;
   background:rgba(120,120,120,0.08);
   cursor:pointer;
   font-size:12px;
   text-align:center;
+  transition:0.2s ease;
 }
 
 .day.hasEntry{
   border:1px solid var(--accent);
 }
 
-/* Smooth hover */
-.day:hover{transform:scale(1.05);}
+.day:hover{
+  transform:scale(1.05);
+}
 
-hr{border:0;border-top:1px solid rgba(120,120,120,0.2);margin:15px 0;}
+/* Stickers */
+
+.sticker-picker{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:16px 0;
+}
+
+.sticker{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.5);
+  transition:0.25s ease;
+  box-shadow: var(--shadow);
+}
+
+.sticker:hover{
+  transform:translateY(-4px) scale(1.05);
+}
+
+.sticker.active{
+  outline:2px solid var(--accent);
+  transform:scale(1.08);
+}
+
+.selected-stickers{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.selected-sticker{
+  font-size:24px;
+  padding:8px 10px;
+  border-radius:12px;
+  background:rgba(120,120,120,0.08);
+}
+
+/* Divider */
+
+hr{
+  border:0;
+  border-top:1px solid rgba(120,120,120,0.15);
+  margin:20px 0;
+}
+
+@media(max-width:900px){
+
+  .app{
+    grid-template-columns:1fr;
+  }
+
+  .sidebar{
+    border-right:none;
+    border-bottom:1px solid rgba(120,120,120,0.1);
+  }
+}
 </style>
 </head>
 
 <body>
+
 <div class="app">
 
-<!-- Sidebar -->
-<div class="sidebar">
-  <div class="logo">🌿 Journal</div>
+  <!-- Sidebar -->
 
-  <button class="btn" onclick="newEntry()">+ New Entry</button>
-  <button class="btn" onclick="toggleTheme()">Toggle Theme</button>
+  <div class="sidebar">
 
-  <hr/>
+    <div class="logo">🌿 Journal</div>
 
-  <div class="small">Search</div>
-  <input id="search" placeholder="Search entries..." oninput="renderList()"/>
+    <button class="btn" onclick="newEntry()">
+      + New Entry
+    </button>
 
-  <hr/>
+    <button class="btn" onclick="toggleTheme()">
+      Toggle Theme
+    </button>
 
-  <div class="small">Entries</div>
-  <div id="list"></div>
-</div>
+    <hr/>
 
-<!-- Main -->
-<div class="main">
+    <div class="small">Search</div>
 
-  <div class="topbar">
-    <div id="dateTitle"></div>
-    <div class="small" id="streak"></div>
+    <input 
+      id="search"
+      placeholder="Search entries..."
+      oninput="renderList()"
+    />
+
+    <hr/>
+
+    <div class="small">Entries</div>
+
+    <div id="list"></div>
+
   </div>
 
-  <div class="card">
+  <!-- Main -->
 
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <span class="mood" onclick="setMood('😊')">😊</span>
-      <span class="mood" onclick="setMood('😌')">😌</span>
-      <span class="mood" onclick="setMood('😐')">😐</span>
-      <span class="mood" onclick="setMood('😔')">😔</span>
-      <span class="mood" onclick="setMood('🔥')">🔥</span>
+  <div class="main">
+
+    <div class="topbar">
+      <div id="dateTitle"></div>
+      <div class="small" id="streak"></div>
     </div>
 
-    <textarea id="text" placeholder="Write your thoughts..."></textarea>
+    <!-- Journal Card -->
 
-    <div class="row">
-      <input id="tagInput" placeholder="Add tag and press Enter"/>
-      <div id="tags"></div>
+    <div class="card">
+
+      <!-- Moods -->
+
+      <div style="display:flex;gap:10px;margin-bottom:14px;">
+        <span class="mood" onclick="setMood('😊')">😊</span>
+        <span class="mood" onclick="setMood('😌')">😌</span>
+        <span class="mood" onclick="setMood('😐')">😐</span>
+        <span class="mood" onclick="setMood('😔')">😔</span>
+        <span class="mood" onclick="setMood('🔥')">🔥</span>
+      </div>
+
+      <!-- Stickers -->
+
+      <div class="small">Today's vibe</div>
+
+      <div class="sticker-picker">
+
+        <div class="sticker" onclick="toggleSticker('🌸')">🌸</div>
+        <div class="sticker" onclick="toggleSticker('☁️')">☁️</div>
+        <div class="sticker" onclick="toggleSticker('📖')">📖</div>
+        <div class="sticker" onclick="toggleSticker('🕯️')">🕯️</div>
+        <div class="sticker" onclick="toggleSticker('🌙')">🌙</div>
+        <div class="sticker" onclick="toggleSticker('🍵')">🍵</div>
+        <div class="sticker" onclick="toggleSticker('🎧')">🎧</div>
+        <div class="sticker" onclick="toggleSticker('🌧️')">🌧️</div>
+
+      </div>
+
+      <div class="selected-stickers" id="selectedStickers"></div>
+
+      <!-- Journal -->
+
+      <textarea 
+        id="text"
+        placeholder="Write your thoughts..."
+      ></textarea>
+
+      <!-- Tags -->
+
+      <div class="row">
+
+        <input 
+          id="tagInput"
+          placeholder="Add tag and press Enter"
+        />
+
+        <div id="tags"></div>
+
+      </div>
+
+    </div>
+
+    <hr/>
+
+    <!-- Calendar -->
+
+    <div class="card">
+
+      <div class="small">Calendar</div>
+
+      <div class="calendar" id="calendar"></div>
+
     </div>
 
   </div>
 
-  <hr/>
-
-  <div class="card">
-    <div class="small">Calendar</div>
-    <div class="calendar" id="calendar"></div>
-  </div>
-
-</div>
 </div>
 
 <script>
+
 let currentDate = new Date().toISOString().split("T")[0];
-let data = JSON.parse(localStorage.getItem("journal") || "{}");
+
+let data = JSON.parse(
+  localStorage.getItem("journal") || "{}"
+);
+
 let currentMood = "";
+
 let tags = [];
 
+let stickers = [];
+
+/* SAVE */
+
 function save(){
+
   data[currentDate] = {
+
     text: document.getElementById("text").value,
+
     mood: currentMood,
-    tags: tags
+
+    tags: tags,
+
+    stickers: stickers
+
   };
-  localStorage.setItem("journal", JSON.stringify(data));
+
+  localStorage.setItem(
+    "journal",
+    JSON.stringify(data)
+  );
+
   renderList();
+
   renderCalendar();
+
   updateStreak();
 }
 
+/* LOAD */
+
 function load(date){
+
   currentDate = date;
-  document.getElementById("dateTitle").innerText = date;
-  let entry = data[date] || {text:"", mood:"", tags:[]};
-  document.getElementById("text").value = entry.text;
+
+  document.getElementById("dateTitle")
+    .innerText = date;
+
+  let entry = data[date] || {
+
+    text:"",
+    mood:"",
+    tags:[],
+    stickers:[]
+
+  };
+
+  document.getElementById("text").value =
+    entry.text;
+
   currentMood = entry.mood;
+
   tags = entry.tags || [];
+
+  stickers = entry.stickers || [];
+
   renderTags();
+
+  renderStickers();
+
+  updateMoodUI();
 }
+
+/* NEW ENTRY */
 
 function newEntry(){
-  load(new Date().toISOString().split("T")[0]);
+
+  load(
+    new Date()
+      .toISOString()
+      .split("T")[0]
+  );
 }
 
-document.getElementById("text").addEventListener("input", save);
+/* AUTOSAVE */
 
-document.getElementById("tagInput").addEventListener("keydown", e=>{
-  if(e.key==="Enter"){
-    tags.push(e.target.value);
-    e.target.value="";
-    renderTags();
-    save();
-  }
+document
+  .getElementById("text")
+  .addEventListener("input", save);
+
+/* TAGS */
+
+document
+  .getElementById("tagInput")
+  .addEventListener("keydown", e=>{
+
+    if(e.key === "Enter"){
+
+      if(!e.target.value.trim()) return;
+
+      tags.push(e.target.value);
+
+      e.target.value = "";
+
+      renderTags();
+
+      save();
+    }
 });
 
+/* RENDER TAGS */
+
 function renderTags(){
+
   document.getElementById("tags").innerHTML =
-    tags.map(t=>`<span class="tag">${t}</span>`).join("");
+
+    tags.map(t =>
+
+      `<span class="tag">${t}</span>`
+
+    ).join("");
 }
 
+/* MOOD */
+
 function setMood(m){
+
   currentMood = m;
+
+  updateMoodUI();
+
   save();
 }
 
+function updateMoodUI(){
+
+  document
+    .querySelectorAll(".mood")
+    .forEach(el=>{
+
+      if(el.innerText === currentMood){
+
+        el.classList.add("active");
+
+      }else{
+
+        el.classList.remove("active");
+      }
+    });
+}
+
+/* STICKERS */
+
+function toggleSticker(sticker){
+
+  if(stickers.includes(sticker)){
+
+    stickers = stickers.filter(
+      s => s !== sticker
+    );
+
+  }else{
+
+    stickers.push(sticker);
+  }
+
+  renderStickers();
+
+  save();
+}
+
+function renderStickers(){
+
+  document.getElementById(
+    "selectedStickers"
+  ).innerHTML =
+
+    stickers.map(s =>
+
+      `<div class="selected-sticker">${s}</div>`
+
+    ).join("");
+
+  document
+    .querySelectorAll(".sticker")
+    .forEach(el=>{
+
+      let val = el.innerText;
+
+      if(stickers.includes(val)){
+
+        el.classList.add("active");
+
+      }else{
+
+        el.classList.remove("active");
+      }
+    });
+}
+
+/* SEARCH */
+
 function renderList(){
-  let q = document.getElementById("search").value.toLowerCase();
+
+  let q = document
+    .getElementById("search")
+    .value
+    .toLowerCase();
+
   let list = Object.keys(data)
-    .filter(d => JSON.stringify(data[d]).toLowerCase().includes(q))
-    .sort().reverse();
+
+    .filter(d =>
+
+      JSON.stringify(data[d])
+      .toLowerCase()
+      .includes(q)
+    )
+
+    .sort()
+    .reverse();
 
   document.getElementById("list").innerHTML =
-    list.map(d=>`
+
+    list.map(d => `
+
       <div class="btn" onclick="load('${d}')">
-        ${d} ${data[d].mood || ""}
+
+        <div>
+          ${d}
+          ${data[d].mood || ""}
+        </div>
+
+        <div style="margin-top:6px;">
+          ${(data[d].stickers || []).join(" ")}
+        </div>
+
       </div>
+
     `).join("");
 }
 
+/* CALENDAR */
+
 function renderCalendar(){
+
   let cal = document.getElementById("calendar");
+
   cal.innerHTML = "";
+
   for(let i=1;i<=30;i++){
+
     let d = new Date();
+
     d.setDate(i);
-    let date = d.toISOString().split("T")[0];
-    let has = data[date] ? "hasEntry" : "";
-    cal.innerHTML += `<div class="day ${has}" onclick="load('${date}')">${i}</div>`;
+
+    let date =
+      d.toISOString().split("T")[0];
+
+    let has = data[date]
+      ? "hasEntry"
+      : "";
+
+    cal.innerHTML += `
+
+      <div 
+        class="day ${has}"
+        onclick="load('${date}')"
+      >
+        ${i}
+      </div>
+
+    `;
   }
 }
 
+/* THEME */
+
 function toggleTheme(){
+
   document.body.dataset.theme =
-    document.body.dataset.theme === "dark" ? "light" : "dark";
+
+    document.body.dataset.theme === "dark"
+
+      ? "light"
+
+      : "dark";
 }
 
+/* STREAK */
+
 function updateStreak(){
-  let days = Object.keys(data).sort();
+
   let streak = 0;
+
   let today = new Date();
 
   for(let i=0;i<30;i++){
+
     let d = new Date();
+
     d.setDate(today.getDate()-i);
-    let key = d.toISOString().split("T")[0];
-    if(data[key]) streak++;
-    else break;
+
+    let key =
+      d.toISOString().split("T")[0];
+
+    if(data[key]){
+
+      streak++;
+
+    }else{
+
+      break;
+    }
   }
 
-  document.getElementById("streak").innerText =
-    `🔥 Streak: ${streak} days`;
+  document.getElementById("streak")
+    .innerText =
+      `🔥 Streak: ${streak} days`;
 }
 
+/* INIT */
+
 load(currentDate);
+
 renderList();
+
 renderCalendar();
+
 updateStreak();
+
 </script>
+
 </body>
 </html>
