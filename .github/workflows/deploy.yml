@@ -1,0 +1,20 @@
+name: Auto Deploy to VM
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM }}
+          username: root
+          key: ${{ secrets.PVKEY }}
+          script: |
+            cd /var/www/html
+            git pull origin main
