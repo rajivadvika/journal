@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Daily Journal</title>
+
+<style>
+:root{
+  --bg:#f7f6f3;
+  --card:#ffffffcc;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --accent:#a78bfa;
+  --accent2:#60a5fa;
+  --shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+[data-theme="dark"]{
+  --bg:#0f172a;
+  --card:#111827cc;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+*{box-sizing:border-box;font-family: ui-sans-serif, system-ui;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  transition:0.4s ease;
+}
+
+.app{
+  display:grid;
+  grid-template-columns: 280px 1fr;
+  height:100vh;
+}
+
+/* Sidebar */
+.sidebar{
+  padding:20px;
+  border-right:1px solid rgba(150,150,150,0.1);
+  backdrop-filter: blur(10px);
+}
+
+.logo{
+  font-size:20px;
+  font-weight:600;
+  margin-bottom:20px;
+}
+
+.btn{
+  background:var(--card);
+  border:none;
+  padding:10px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  margin:5px 0;
+  width:100%;
+  color:var(--text);
+  box-shadow:var(--shadow);
+  transition:0.2s;
+}
+.btn:hover{transform:translateY(-2px);}
+
+.small{
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* Main */
+.main{
+  padding:30px;
+  overflow:auto;
+}
+
+/* Entry Card */
+.card{
+  background:var(--card);
+  box-shadow:var(--shadow);
+  border-radius:18px;
+  padding:20px;
+  backdrop-filter: blur(12px);
+  animation:fade 0.5s ease;
+}
+
+@keyframes fade{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+textarea{
+  width:100%;
+  height:200px;
+  border:none;
+  outline:none;
+  background:transparent;
+  resize:none;
+  font-size:16px;
+  color:var(--text);
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.tag{
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(120,120,120,0.1);
+  cursor:pointer;
+  font-size:12px;
+}
+
+.mood{
+  font-size:22px;
+  cursor:pointer;
+  opacity:0.6;
+}
+.mood.active{opacity:1;transform:scale(1.2);}
+
+input{
+  padding:8px;
+  border-radius:10px;
+  border:none;
+  outline:none;
+  background:rgba(120,120,120,0.1);
+  color:var(--text);
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+/* Calendar */
+.calendar{
+  display:grid;
+  grid-template-columns: repeat(7,1fr);
+  gap:8px;
+}
+
+.day{
+  padding:10px;
+  border-radius:10px;
+  background:rgba(120,120,120,0.08);
+  cursor:pointer;
+  font-size:12px;
+  text-align:center;
+}
+
+.day.hasEntry{
+  border:1px solid var(--accent);
+}
+
+/* Smooth hover */
+.day:hover{transform:scale(1.05);}
+
+hr{border:0;border-top:1px solid rgba(120,120,120,0.2);margin:15px 0;}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo">🌿 Journal</div>
+
+  <button class="btn" onclick="newEntry()">+ New Entry</button>
+  <button class="btn" onclick="toggleTheme()">Toggle Theme</button>
+
+  <hr/>
+
+  <div class="small">Search</div>
+  <input id="search" placeholder="Search entries..." oninput="renderList()"/>
+
+  <hr/>
+
+  <div class="small">Entries</div>
+  <div id="list"></div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <div class="topbar">
+    <div id="dateTitle"></div>
+    <div class="small" id="streak"></div>
+  </div>
+
+  <div class="card">
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <span class="mood" onclick="setMood('😊')">😊</span>
+      <span class="mood" onclick="setMood('😌')">😌</span>
+      <span class="mood" onclick="setMood('😐')">😐</span>
+      <span class="mood" onclick="setMood('😔')">😔</span>
+      <span class="mood" onclick="setMood('🔥')">🔥</span>
+    </div>
+
+    <textarea id="text" placeholder="Write your thoughts..."></textarea>
+
+    <div class="row">
+      <input id="tagInput" placeholder="Add tag and press Enter"/>
+      <div id="tags"></div>
+    </div>
+
+  </div>
+
+  <hr/>
+
+  <div class="card">
+    <div class="small">Calendar</div>
+    <div class="calendar" id="calendar"></div>
+  </div>
+
+</div>
+</div>
+
+<script>
+let currentDate = new Date().toISOString().split("T")[0];
+let data = JSON.parse(localStorage.getItem("journal") || "{}");
+let currentMood = "";
+let tags = [];
+
+function save(){
+  data[currentDate] = {
+    text: document.getElementById("text").value,
+    mood: currentMood,
+    tags: tags
+  };
+  localStorage.setItem("journal", JSON.stringify(data));
+  renderList();
+  renderCalendar();
+  updateStreak();
+}
+
+function load(date){
+  currentDate = date;
+  document.getElementById("dateTitle").innerText = date;
+  let entry = data[date] || {text:"", mood:"", tags:[]};
+  document.getElementById("text").value = entry.text;
+  currentMood = entry.mood;
+  tags = entry.tags || [];
+  renderTags();
+}
+
+function newEntry(){
+  load(new Date().toISOString().split("T")[0]);
+}
+
+document.getElementById("text").addEventListener("input", save);
+
+document.getElementById("tagInput").addEventListener("keydown", e=>{
+  if(e.key==="Enter"){
+    tags.push(e.target.value);
+    e.target.value="";
+    renderTags();
+    save();
+  }
+});
+
+function renderTags(){
+  document.getElementById("tags").innerHTML =
+    tags.map(t=>`<span class="tag">${t}</span>`).join("");
+}
+
+function setMood(m){
+  currentMood = m;
+  save();
+}
+
+function renderList(){
+  let q = document.getElementById("search").value.toLowerCase();
+  let list = Object.keys(data)
+    .filter(d => JSON.stringify(data[d]).toLowerCase().includes(q))
+    .sort().reverse();
+
+  document.getElementById("list").innerHTML =
+    list.map(d=>`
+      <div class="btn" onclick="load('${d}')">
+        ${d} ${data[d].mood || ""}
+      </div>
+    `).join("");
+}
+
+function renderCalendar(){
+  let cal = document.getElementById("calendar");
+  cal.innerHTML = "";
+  for(let i=1;i<=30;i++){
+    let d = new Date();
+    d.setDate(i);
+    let date = d.toISOString().split("T")[0];
+    let has = data[date] ? "hasEntry" : "";
+    cal.innerHTML += `<div class="day ${has}" onclick="load('${date}')">${i}</div>`;
+  }
+}
+
+function toggleTheme(){
+  document.body.dataset.theme =
+    document.body.dataset.theme === "dark" ? "light" : "dark";
+}
+
+function updateStreak(){
+  let days = Object.keys(data).sort();
+  let streak = 0;
+  let today = new Date();
+
+  for(let i=0;i<30;i++){
+    let d = new Date();
+    d.setDate(today.getDate()-i);
+    let key = d.toISOString().split("T")[0];
+    if(data[key]) streak++;
+    else break;
+  }
+
+  document.getElementById("streak").innerText =
+    `🔥 Streak: ${streak} days`;
+}
+
+load(currentDate);
+renderList();
+renderCalendar();
+updateStreak();
+</script>
+</body>
+</html>
