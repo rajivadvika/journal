@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Living Journal</title>
+<title>Living Journal System</title>
 
 <style>
 :root{
   --bg:#f7f6f3;
   --text:#1f2937;
-  --accent:#a78bfa;
+  --card:#ffffffcc;
 }
 
 body{
@@ -17,7 +17,7 @@ body{
   font-family:system-ui;
   background:var(--bg);
   color:var(--text);
-  overflow:hidden;
+  transition:0.4s;
 }
 
 /* DARK MODE */
@@ -27,88 +27,108 @@ body.dark{
   background:var(--bg);
 }
 
-/* layout */
-.wrap{
-  display:flex;
+/* LAYOUT */
+.app{
+  display:grid;
+  grid-template-columns:220px 1fr 220px;
   height:100vh;
 }
 
-/* left writing */
-.panel{
-  width:40%;
-  padding:30px;
+/* FOLDERS */
+.sidebar{
+  padding:12px;
+  border-right:1px solid rgba(120,120,120,0.2);
+  overflow:auto;
+}
+
+.folder{
+  padding:10px;
+  margin:6px 0;
+  background:var(--card);
+  border-radius:10px;
+  cursor:pointer;
+}
+
+/* CENTER */
+.main{
+  padding:20px;
+  position:relative;
 }
 
 textarea{
   width:100%;
-  height:300px;
+  height:160px;
   border:none;
   outline:none;
-  font-size:16px;
   background:transparent;
+  font-size:16px;
   color:inherit;
-  resize:none;
 }
 
-/* flower */
-.flowerBox{
-  width:60%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-}
-
-.stem{
-  width:6px;
-  background:#22c55e;
-  height:20px;
-  border-radius:10px;
-  transition:0.15s linear;
-}
-
-.bloom{
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  background:radial-gradient(circle, #f472b6, #a78bfa);
-  position:absolute;
-  top:-18px;
-  opacity:0.3;
-  transform:scale(0.5);
-  transition:0.15s linear;
-}
-
-/* shimmer trail */
-.shimmer{
+/* WORD FLOWER FIELD */
+.field{
   position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  padding:10px;
+  pointer-events:none;
+}
+
+.flower{
   width:10px;
   height:10px;
   border-radius:50%;
-  pointer-events:none;
-  background:radial-gradient(circle, rgba(255,255,255,0.9), transparent);
-  animation:fade 0.6s forwards;
+  background:#a78bfa;
+  opacity:0.8;
+  animation:grow 0.3s ease;
 }
 
-@keyframes fade{
-  to{opacity:0; transform:scale(3);}
+@keyframes grow{
+  from{transform:scale(0);}
+  to{transform:scale(1);}
 }
 
-/* fireflies */
-.firefly{
+/* TASK PANEL */
+.tasks{
+  padding:10px;
+  border-left:1px solid rgba(120,120,120,0.2);
+}
+
+.task{
+  display:flex;
+  justify-content:space-between;
+  margin:6px 0;
+  padding:6px;
+  background:var(--card);
+  border-radius:8px;
+  cursor:pointer;
+}
+
+/* COINS */
+.coin{
   position:fixed;
-  width:6px;
-  height:6px;
-  border-radius:50%;
-  background:rgba(255,255,180,0.9);
-  box-shadow:0 0 10px rgba(255,255,150,0.8);
-  animation:float 6s infinite ease-in-out;
-  pointer-events:none;
+  top:10px;
+  right:10px;
+  background:gold;
+  padding:8px 12px;
+  border-radius:20px;
+  font-weight:bold;
 }
 
-@keyframes float{
+/* BUGS */
+.bug{
+  position:fixed;
+  font-size:14px;
+  animation:fly 6s infinite linear;
+}
+
+@keyframes fly{
   0%{transform:translate(0,0);}
-  50%{transform:translate(40px,-60px);}
+  50%{transform:translate(40px,-40px);}
   100%{transform:translate(0,0);}
 }
 </style>
@@ -116,84 +136,160 @@ textarea{
 
 <body>
 
-<div class="wrap">
+<div class="coin">🪙 <span id="coins">0</span></div>
 
-  <div class="panel">
-    <h2>🌿 Living Journal</h2>
-    <button onclick="toggleDark()">Toggle Dark</button>
+<div class="app">
 
-    <textarea id="text" placeholder="Start writing..."></textarea>
-  </div>
+<!-- FOLDERS -->
+<div class="sidebar">
+  <h3>📁 Days</h3>
+  <div id="folders"></div>
+  <button onclick="newDay()">+ New Day</button>
+  <button onclick="toggleMode()">Toggle Mode</button>
+</div>
 
-  <div class="flowerBox">
-    <div class="stem" id="stem"></div>
-    <div class="bloom" id="bloom"></div>
-  </div>
+<!-- MAIN -->
+<div class="main">
+  <h2 id="dayLabel">Today</h2>
+
+  <textarea id="text" placeholder="Write..."></textarea>
+
+  <div class="field" id="field"></div>
+</div>
+
+<!-- TASKS -->
+<div class="tasks">
+  <h3>📌 Daily Tasks</h3>
+  <div id="tasks"></div>
+</div>
 
 </div>
 
 <script>
 
-const text = document.getElementById("text");
-const stem = document.getElementById("stem");
-const bloom = document.getElementById("bloom");
+let data = JSON.parse(localStorage.getItem("journalSys") || "{}");
+let currentDay = new Date().toISOString().split("T")[0];
 
-/* 🌸 FLOWER GROWS PER LETTER */
-text.addEventListener("input", () => {
+let coins = parseInt(localStorage.getItem("coins") || "0");
 
-  let len = text.value.length;
+let tasks = [
+  {t:"Write 50 words", done:false},
+  {t:"Reflect 1 feeling", done:false},
+  {t:"Describe moment", done:false},
+  {t:"Gratitude line", done:false},
+  {t:"One intention", done:false}
+];
 
-  // stem grows
-  stem.style.height = Math.min(300, 20 + len * 4) + "px";
+/* INIT */
+document.getElementById("coins").innerText = coins;
 
-  // bloom opens
-  let p = Math.min(1, len / 120);
+/* SAVE DAY */
+function save(){
+  data[currentDay] = {
+    text: text.value
+  };
 
-  bloom.style.opacity = 0.2 + p;
-  bloom.style.transform = `scale(${0.5 + p})`;
-});
+  localStorage.setItem("journalSys", JSON.stringify(data));
+}
 
-/* ✨ SHIMMER FOLLOW MOUSE */
-document.addEventListener("mousemove", (e) => {
+/* WORD FLOWERS */
+text.oninput = () => {
 
-  let s = document.createElement("div");
-  s.className = "shimmer";
-  s.style.left = e.clientX + "px";
-  s.style.top = e.clientY + "px";
+  save();
 
-  document.body.appendChild(s);
+  let words = text.value.trim().split(/\s+/);
+  let field = document.getElementById("field");
 
-  setTimeout(() => s.remove(), 600);
-});
+  field.innerHTML = "";
 
-/* 🪲 FIREFLIES (ONLY DARK MODE) */
-function spawnFireflies(){
-
-  for(let i=0;i<18;i++){
+  words.forEach(w => {
+    if(!w) return;
 
     let f = document.createElement("div");
-    f.className = "firefly";
+    f.className = "flower";
+    field.appendChild(f);
+  });
+};
 
-    f.style.left = Math.random()*100 + "vw";
-    f.style.top = Math.random()*100 + "vh";
-    f.style.animationDuration = (4 + Math.random()*4) + "s";
-    f.style.opacity = 0.4 + Math.random()*0.6;
+/* FOLDERS */
+function renderFolders(){
 
-    document.body.appendChild(f);
-  }
+  let box = document.getElementById("folders");
+  box.innerHTML = "";
+
+  Object.keys(data).forEach(d => {
+
+    let div = document.createElement("div");
+    div.className = "folder";
+    div.innerText = d;
+
+    div.onclick = () => {
+      currentDay = d;
+      text.value = data[d].text || "";
+    };
+
+    box.appendChild(div);
+  });
 }
 
-/* toggle dark + fireflies */
-function toggleDark(){
+function newDay(){
+  currentDay = new Date().toISOString().split("T")[0];
+  text.value = "";
+}
 
+/* TASKS */
+function renderTasks(){
+
+  let box = document.getElementById("tasks");
+  box.innerHTML = "";
+
+  tasks.forEach((t,i) => {
+
+    let div = document.createElement("div");
+    div.className = "task";
+    div.innerHTML = `${t.t} ${t.done ? "✔️" : ""}`;
+
+    div.onclick = () => {
+
+      if(!t.done){
+        t.done = true;
+        coins += 10;
+        localStorage.setItem("coins", coins);
+        document.getElementById("coins").innerText = coins;
+      }
+
+      renderTasks();
+    };
+
+    box.appendChild(div);
+  });
+}
+
+/* BUG SHOP (simple demo) */
+function spawnBug(){
+
+  let b = document.createElement("div");
+  b.className = "bug";
+  b.innerText = "🐞";
+
+  b.style.left = Math.random()*90 + "vw";
+  b.style.top = Math.random()*90 + "vh";
+
+  document.body.appendChild(b);
+}
+
+/* TOGGLE MODE */
+function toggleMode(){
   document.body.classList.toggle("dark");
 
-  document.querySelectorAll(".firefly").forEach(f => f.remove());
-
   if(document.body.classList.contains("dark")){
-    spawnFireflies();
+    spawnBug();
   }
 }
+
+/* INIT */
+renderFolders();
+renderTasks();
 
 </script>
 
