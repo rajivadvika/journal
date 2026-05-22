@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Living Journal Garden</title>
+<title>Living Journal</title>
 
 <style>
 :root{
   --bg:#f7f6f3;
   --text:#1f2937;
+  --accent:#a78bfa;
 }
 
 body{
@@ -16,243 +17,183 @@ body{
   font-family:system-ui;
   background:var(--bg);
   color:var(--text);
-  transition:1s;
+  overflow:hidden;
 }
 
-/* NIGHT MODE */
-body.night{
+/* DARK MODE */
+body.dark{
   --bg:#0b1020;
   --text:#e5e7eb;
   background:var(--bg);
 }
 
-/* LAYOUT */
-.app{
-  max-width:900px;
-  margin:auto;
-  padding:20px;
-}
-
-.card{
-  background:rgba(255,255,255,0.7);
-  padding:16px;
-  border-radius:16px;
-  margin-bottom:16px;
-}
-
-/* GARDEN */
-.garden{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
-  gap:12px;
-}
-
-/* PLANT */
-.plant{
-  height:120px;
+/* layout */
+.wrap{
   display:flex;
-  align-items:flex-end;
+  height:100vh;
+}
+
+/* left writing */
+.panel{
+  width:40%;
+  padding:30px;
+}
+
+textarea{
+  width:100%;
+  height:300px;
+  border:none;
+  outline:none;
+  font-size:16px;
+  background:transparent;
+  color:inherit;
+  resize:none;
+}
+
+/* flower */
+.flowerBox{
+  width:60%;
+  display:flex;
+  align-items:center;
   justify-content:center;
   position:relative;
 }
 
 .stem{
-  width:5px;
-  background:#16a34a;
+  width:6px;
+  background:#22c55e;
+  height:20px;
   border-radius:10px;
-  transition:1s;
+  transition:0.15s linear;
 }
 
-.flower{
-  width:18px;
-  height:18px;
+.bloom{
+  width:20px;
+  height:20px;
   border-radius:50%;
+  background:radial-gradient(circle, #f472b6, #a78bfa);
   position:absolute;
-  top:10px;
-  transition:1s;
+  top:-18px;
+  opacity:0.3;
+  transform:scale(0.5);
+  transition:0.15s linear;
 }
 
-/* glow at night */
-.night .flower{
-  box-shadow:0 0 12px rgba(150,200,255,0.9);
+/* shimmer trail */
+.shimmer{
+  position:fixed;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle, rgba(255,255,255,0.9), transparent);
+  animation:fade 0.6s forwards;
 }
 
-/* butterflies */
-.butterfly{
-  position:absolute;
-  font-size:14px;
-  animation:fly 6s linear infinite;
+@keyframes fade{
+  to{opacity:0; transform:scale(3);}
 }
 
-@keyframes fly{
+/* fireflies */
+.firefly{
+  position:fixed;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:rgba(255,255,180,0.9);
+  box-shadow:0 0 10px rgba(255,255,150,0.8);
+  animation:float 6s infinite ease-in-out;
+  pointer-events:none;
+}
+
+@keyframes float{
   0%{transform:translate(0,0);}
-  50%{transform:translate(20px,-40px);}
+  50%{transform:translate(40px,-60px);}
   100%{transform:translate(0,0);}
-}
-
-/* textarea */
-textarea{
-  width:100%;
-  height:120px;
-  border:none;
-  outline:none;
-  font-size:16px;
-  background:transparent;
-  resize:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="wrap">
 
-<div class="card">
-  <h2>🌿 Living Journal Garden</h2>
+  <div class="panel">
+    <h2>🌿 Living Journal</h2>
+    <button onclick="toggleDark()">Toggle Dark</button>
 
-  <button onclick="toggleNight()">🌙 Toggle Night</button>
-  <button onclick="setWeather('sun')">☀️ Sun</button>
-  <button onclick="setWeather('rain')">🌧️ Rain</button>
-  <button onclick="setWeather('drought')">🔥 Drought</button>
+    <textarea id="text" placeholder="Start writing..."></textarea>
+  </div>
 
-  <p id="weatherLabel">Weather: Sun</p>
-
-  <textarea id="text" placeholder="Write your thoughts..."></textarea>
-  <button onclick="saveEntry()">Plant Memory 🌱</button>
-</div>
-
-<div class="card">
-  <h3>🌼 Your Garden</h3>
-  <div id="garden" class="garden"></div>
-</div>
+  <div class="flowerBox">
+    <div class="stem" id="stem"></div>
+    <div class="bloom" id="bloom"></div>
+  </div>
 
 </div>
 
 <script>
 
-let data = JSON.parse(localStorage.getItem("gardenSim") || "[]");
-let weather = "sun";
-let lastWrite = Date.now();
+const text = document.getElementById("text");
+const stem = document.getElementById("stem");
+const bloom = document.getElementById("bloom");
 
-/* simple AI-ish classifier */
-function getPlantType(text){
+/* 🌸 FLOWER GROWS PER LETTER */
+text.addEventListener("input", () => {
 
-  text = text.toLowerCase();
+  let len = text.value.length;
 
-  if(text.includes("happy") || text.includes("love")) return "pink";
-  if(text.includes("angry") || text.includes("fire")) return "red";
-  if(text.includes("calm") || text.includes("peace")) return "blue";
-  return "green";
+  // stem grows
+  stem.style.height = Math.min(300, 20 + len * 4) + "px";
+
+  // bloom opens
+  let p = Math.min(1, len / 120);
+
+  bloom.style.opacity = 0.2 + p;
+  bloom.style.transform = `scale(${0.5 + p})`;
+});
+
+/* ✨ SHIMMER FOLLOW MOUSE */
+document.addEventListener("mousemove", (e) => {
+
+  let s = document.createElement("div");
+  s.className = "shimmer";
+  s.style.left = e.clientX + "px";
+  s.style.top = e.clientY + "px";
+
+  document.body.appendChild(s);
+
+  setTimeout(() => s.remove(), 600);
+});
+
+/* 🪲 FIREFLIES (ONLY DARK MODE) */
+function spawnFireflies(){
+
+  for(let i=0;i<18;i++){
+
+    let f = document.createElement("div");
+    f.className = "firefly";
+
+    f.style.left = Math.random()*100 + "vw";
+    f.style.top = Math.random()*100 + "vh";
+    f.style.animationDuration = (4 + Math.random()*4) + "s";
+    f.style.opacity = 0.4 + Math.random()*0.6;
+
+    document.body.appendChild(f);
+  }
 }
 
-/* weather effects */
-function weatherMultiplier(){
-  if(weather === "rain") return 1.5;
-  if(weather === "drought") return 0.6;
-  return 1;
+/* toggle dark + fireflies */
+function toggleDark(){
+
+  document.body.classList.toggle("dark");
+
+  document.querySelectorAll(".firefly").forEach(f => f.remove());
+
+  if(document.body.classList.contains("dark")){
+    spawnFireflies();
+  }
 }
-
-/* save entry */
-function saveEntry(){
-
-  const text = document.getElementById("text").value;
-
-  const entry = {
-    text,
-    len: text.length,
-    type: getPlantType(text),
-    time: Date.now()
-  };
-
-  data.push(entry);
-  localStorage.setItem("gardenSim", JSON.stringify(data));
-
-  document.getElementById("text").value = "";
-  lastWrite = Date.now();
-
-  renderGarden();
-}
-
-/* weather */
-function setWeather(w){
-  weather = w;
-  document.getElementById("weatherLabel").innerText =
-    "Weather: " + w;
-}
-
-/* night mode */
-function toggleNight(){
-  document.body.classList.toggle("night");
-}
-
-/* decay system */
-function decayFactor(entry){
-  let hours = (Date.now() - entry.time) / 3600000;
-
-  if(hours < 12) return 1;
-  if(hours < 24) return 0.7;
-  if(hours < 48) return 0.4;
-  return 0.2;
-}
-
-/* render garden */
-function renderGarden(){
-
-  const garden = document.getElementById("garden");
-  garden.innerHTML = "";
-
-  data.forEach(e => {
-
-    let size = Math.min(100, 20 + e.len * 1.2);
-
-    size *= weatherMultiplier();
-    size *= decayFactor(e);
-
-    let color =
-      e.type === "red" ? "#f87171" :
-      e.type === "blue" ? "#60a5fa" :
-      e.type === "pink" ? "#f472b6" :
-      "#4ade80";
-
-    let glow = document.body.classList.contains("night")
-      ? "0 0 12px rgba(120,200,255,0.6)"
-      : "none";
-
-    garden.innerHTML += `
-      <div class="plant">
-        <div class="stem" style="height:${size}px"></div>
-        <div class="flower" style="background:${color}; box-shadow:${glow}"></div>
-      </div>
-    `;
-  });
-
-  spawnButterflies();
-}
-
-/* butterflies for happy mood plants */
-function spawnButterflies(){
-
-  document.querySelectorAll(".butterfly").forEach(b=>b.remove());
-
-  let happyPlants = data.filter(e => getPlantType(e.text) === "pink");
-
-  happyPlants.slice(0,3).forEach(() => {
-
-    let b = document.createElement("div");
-    b.className = "butterfly";
-    b.innerHTML = "🦋";
-
-    b.style.left = Math.random()*80 + "%";
-    b.style.top = Math.random()*80 + "%";
-
-    document.body.appendChild(b);
-  });
-}
-
-/* auto decay refresh */
-setInterval(renderGarden, 60000);
-
-renderGarden();
 
 </script>
 
