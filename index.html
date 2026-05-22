@@ -1,349 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Living Memory World Prototype</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Digital Journal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --text-color: #333;
+            --card-text: #444;
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
 
-<style>
-body{
-  margin:0;
-  font-family:system-ui;
-  overflow:hidden;
-  background:#0f1220;
-  color:white;
-}
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #2b1055 0%, #7597de 100%);
+            --glass-bg: rgba(20, 20, 20, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-color: #f0f0f0;
+            --card-text: #e0e0e0;
+        }
 
-/* LAYOUT */
-.wrap{
-  display:grid;
-  grid-template-columns:1.2fr 0.8fr;
-  height:100vh;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
 
-/* WORLD */
-.world{
-  position:relative;
-  overflow:hidden;
-  background:radial-gradient(circle at center, #1a1f3a, #070a14);
-}
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 2rem;
+            background-attachment: fixed;
+        }
 
-/* avatar */
-.avatar{
-  position:absolute;
-  top:40px;
-  left:40px;
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  background:linear-gradient(145deg,#5eead4,#60a5fa);
-  box-shadow:0 0 20px rgba(96,165,250,0.5);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:30px;
-  transition:0.4s ease;
-  animation: breathe 3s infinite ease-in-out;
-}
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
 
-@keyframes breathe{
-  0%{transform:scale(1);}
-  50%{transform:scale(1.05);}
-  100%{transform:scale(1);}
-}
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            font-family: 'Lora', serif;
+        }
 
-/* particles */
-.entity{
-  position:absolute;
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  pointer-events:none;
-  opacity:0.9;
-}
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+        }
 
-/* UI */
-.panel{
-  background:#0b1020;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-}
+        .theme-toggle {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+        }
 
-textarea{
-  flex:1;
-  background:#12182c;
-  border:none;
-  color:white;
-  padding:10px;
-  outline:none;
-  resize:none;
-  font-size:14px;
-  border-radius:8px;
-}
+        /* Glassmorphism Panel */
+        .journal-form {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 3rem;
+        }
 
-/* chat */
-.chat{
-  height:200px;
-  overflow:auto;
-  margin-top:10px;
-  background:#0f152a;
-  padding:10px;
-  border-radius:8px;
-  font-size:13px;
-}
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
 
-/* coin */
-.coin{
-  padding:8px;
-  background:#1f2a44;
-  margin-bottom:8px;
-  border-radius:8px;
-}
-</style>
+        input[type="text"], select, textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 0.8rem;
+            color: var(--text-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        [data-theme="dark"] input[type="text"], 
+        [data-theme="dark"] select, 
+        [data-theme="dark"] textarea {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+            margin-bottom: 0.5rem;
+            font-family: 'Lora', serif;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: inherit;
+            opacity: 0.7;
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .word-count {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        button.save-btn {
+            background: #fff;
+            color: #ff9a9e;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        [data-theme="dark"] button.save-btn {
+            background: #2b1055;
+            color: #fff;
+        }
+
+        button.save-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Entries Grid */
+        .entries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .entry-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .entry-title {
+            font-family: 'Lora', serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .entry-content {
+            font-size: 0.95rem;
+            color: var(--card-text);
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .delete-btn {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .entry-card:hover .delete-btn {
+            opacity: 1;
+        }
+
+    </style>
 </head>
-
 <body>
 
-<div class="wrap">
-
-  <!-- WORLD -->
-  <div class="world" id="world">
-    <div class="avatar" id="avatar">🙂</div>
-  </div>
-
-  <!-- PANEL -->
-  <div class="panel">
-
-    <div class="coin">🪙 Coins: <span id="coins">0</span></div>
-
-    <textarea id="text" placeholder="Write your thoughts..."></textarea>
-
-    <div class="chat" id="chat"></div>
-
-  </div>
-
-</div>
-
-<script>
-
-/* =========================
-   STATE ENGINE
-========================= */
-
-let coins = 0;
-
-let memory = JSON.parse(localStorage.getItem("memoryWorld") || JSON.stringify({
-  messages: [],
-  moodHistory: []
-}));
-
-let entities = [];
-
-const world = document.getElementById("world");
-const avatar = document.getElementById("avatar");
-const chat = document.getElementById("chat");
-const text = document.getElementById("text");
-
-/* =========================
-   EMOTION ENGINE
-========================= */
-
-function getMood(t){
-  t = t.toLowerCase();
-
-  if(t.includes("love") || t.includes("happy")) return "happy";
-  if(t.includes("sad") || t.includes("lonely")) return "sad";
-  if(t.includes("angry")) return "angry";
-  if(t.includes("calm")) return "calm";
-  return "neutral";
-}
-
-/* =========================
-   AVATAR SYSTEM
-========================= */
-
-function updateAvatar(mood){
-
-  const moods = {
-    happy:"😄",
-    sad:"😔",
-    angry:"😠",
-    calm:"😌",
-    neutral:"🙂"
-  };
-
-  avatar.innerText = moods[mood] || "🙂";
-
-  if(mood === "happy"){
-    avatar.style.background = "linear-gradient(145deg,#f472b6,#facc15)";
-  }
-  else if(mood === "sad"){
-    avatar.style.background = "linear-gradient(145deg,#60a5fa,#1e3a8a)";
-  }
-  else if(mood === "angry"){
-    avatar.style.background = "linear-gradient(145deg,#f87171,#7f1d1d)";
-  }
-  else {
-    avatar.style.background = "linear-gradient(145deg,#5eead4,#60a5fa)";
-  }
-}
-
-/* =========================
-   MEMORY SYSTEM
-========================= */
-
-function saveMemory(text,mood){
-
-  memory.messages.push({text,mood,time:Date.now()});
-  memory.moodHistory.push(mood);
-
-  if(memory.messages.length > 50) memory.messages.shift();
-
-  localStorage.setItem("memoryWorld", JSON.stringify(memory));
-}
-
-/* =========================
-   THOUGHT BEINGS (PHYSICS)
-========================= */
-
-function spawnEntities(text,mood){
-
-  let words = text.split(/\s+/);
-
-  words.forEach(w => {
-    if(!w) return;
-
-    entities.push({
-      x:Math.random()*window.innerWidth*0.6,
-      y:Math.random()*window.innerHeight,
-      vx:(Math.random()-0.5)*2,
-      vy:(Math.random()-0.5)*2,
-      mood
-    });
-  });
-}
-
-/* physics loop */
-function updateEntities(){
-
-  world.querySelectorAll(".entity").forEach(e=>e.remove());
-
-  entities.forEach(ent => {
-
-    // simple physics
-    ent.x += ent.vx;
-    ent.y += ent.vy;
-
-    // boundaries
-    if(ent.x<0 || ent.x>window.innerWidth*0.6) ent.vx *= -1;
-    if(ent.y<0 || ent.y>window.innerHeight) ent.vy *= -1;
-
-    // mood behavior
-    if(ent.mood === "happy") ent.vx *= 1.01;
-    if(ent.mood === "sad") ent.vx *= 0.99;
-    if(ent.mood === "angry") ent.vx *= 1.03;
-
-    let d = document.createElement("div");
-    d.className = "entity";
-
-    if(ent.mood === "happy") d.style.background="#facc15";
-    else if(ent.mood === "sad") d.style.background="#60a5fa";
-    else if(ent.mood === "angry") d.style.background="#f87171";
-    else d.style.background="#34d399";
-
-    d.style.left = ent.x + "px";
-    d.style.top = ent.y + "px";
-
-    world.appendChild(d);
-  });
-
-  requestAnimationFrame(updateEntities);
-}
-
-/* =========================
-   AUDIO ENGINE
-========================= */
-
-let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-function playTone(freq){
-
-  let osc = audioCtx.createOscillator();
-  let gain = audioCtx.createGain();
-
-  osc.frequency.value = freq;
-  osc.type = "sine";
-
-  gain.gain.value = 0.03;
-
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.05);
-}
-
-function moodSound(mood){
-  if(mood==="happy") playTone(600);
-  else if(mood==="sad") playTone(200);
-  else if(mood==="angry") playTone(120);
-  else playTone(400);
-}
-
-/* =========================
-   INPUT SYSTEM
-========================= */
-
-text.addEventListener("input", () => {
-
-  coins++;
-  document.getElementById("coins").innerText = coins;
-
-  let mood = getMood(text.value);
-
-  updateAvatar(mood);
-  saveMemory(text.value,mood);
-  spawnEntities(text.value,mood);
-  moodSound(mood);
-
-  addChat("You", text.value.slice(-30));
-});
-
-/* =========================
-   CHAT SYSTEM
-========================= */
-
-function addChat(who,msg){
-
-  let div = document.createElement("div");
-  div.innerText = `${who}: ${msg}`;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-
-  if(who==="You"){
-    setTimeout(()=>{
-      let last = memory.messages[memory.messages.length-1];
-      if(!last) return;
-
-      let reply =
-        last.mood==="happy" ? "You feel bright today." :
-        last.mood==="sad" ? "I notice a heaviness in you." :
-        last.mood==="angry" ? "That energy is strong." :
-        "I'm here with you.";
-
-      addChat("AI",reply);
-    },600);
-  }
-}
-
-/* =========================
-   START SYSTEMS
-========================= */
-
-updateEntities();
-
-</script>
-
+    <div class="container">
+        <header>
+            <h1>My Journal</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </header>
+
+        <div class="journal-form">
+            <div class="controls">
+                <input type="text" id="entry-title" placeholder="Give your entry a title...">
+                <select id="entry-mood">
+                    <option value="😊">😊 Happy</option>
+                    <option value="😌">😌 Calm</option>
+                    <option value="😔">😔 Sad</option>
+                    <option value="😡">😡 Angry</option>
+                    <option value="✨">✨ Inspired</option>
+                </select>
+            </div>
+            
+            <textarea id="entry-content" placeholder="Dear journal, today..." onkeyup="updateWordCount()"></textarea>
+            
+            <div class="form-footer">
+                <span class="word-count">Words: <span id="word-counter">0</span></span>
+                <button class="save-btn" onclick="saveEntry()">Save Entry</button>
+            </div>
+        </div>
+
+        <div class="entries-grid" id="entries-container">
+            <!-- Journal entries will appear here -->
+        </div>
+    </div>
+
+    <script>
+        // Load entries from local storage when page loads
+        let entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+
+        // Initialize App
+        window.onload = () => {
+            renderEntries();
+            checkSavedTheme();
+        };
+
+        function updateWordCount() {
+            const text = document.getElementById('entry-content').value;
+            const count = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            document.getElementById('word-counter').innerText = count;
+        }
+
+        function saveEntry() {
+            const titleInput = document.getElementById('entry-title').value;
+            const contentInput = document.getElementById('entry-content').value;
+            const moodInput = document.getElementById('entry-mood').value;
+
+            if (!contentInput.trim()) {
+                alert("Please write something in your journal before saving!");
+                return;
+            }
+
+            const newEntry = {
+                id: Date.now(),
+                title: titleInput || "Untitled Entry",
+                content: contentInput,
+                mood: moodInput,
+                date: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+            };
+
+            // Add to beginning of array
+            entries.unshift(newEntry);
+            
+            // Save to local storage
+            localStorage.setItem('journalEntries', JSON.stringify(entries));
+
+            // Clear form
+            document.getElementById('entry-title').value = '';
+            document.getElementById('entry-content').value = '';
+            document.getElementById('entry-mood').value = '😊';
+            updateWordCount();
+
+            renderEntries();
+        }
+
+        function deleteEntry(id) {
+            entries = entries.filter(entry => entry.id !== id);
+            localStorage.setItem('journalEntries', JSON.stringify(entries));
+            renderEntries();
+        }
+
+        function renderEntries() {
+            const container = document.getElementById('entries-container');
+            container.innerHTML = ''; // Clear current display
+
+            entries.forEach(entry => {
+                const card = document.createElement('div');
+                card.className = 'entry-card';
+
+                card.innerHTML = `
+                    <div class="entry-header">
+                        <span>${entry.date}</span>
+                        <span>${entry.mood}</span>
+                    </div>
+                    <h3 class="entry-title">${escapeHTML(entry.title)}</h3>
+                    <div class="entry-content">${escapeHTML(entry.content)}</div>
+                    <button class="delete-btn" onclick="deleteEntry(${entry.id})">Delete</button>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Utility to prevent HTML injection if typing code
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        // Theme Toggling functionality
+        function toggleTheme() {
+            const body = document.body;
+            const themeBtn = document.querySelector('.theme-toggle');
+            
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeBtn.innerText = '🌙 Dark Mode';
+                localStorage.setItem('journalTheme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeBtn.innerText = '☀️ Light Mode';
+                localStorage.setItem('journalTheme', 'dark');
+            }
+        }
+
+        function checkSavedTheme() {
+            const savedTheme = localStorage.getItem('journalTheme');
+            if (savedTheme === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.querySelector('.theme-toggle').innerText = '☀️ Light Mode';
+            }
+        }
+    </script>
 </body>
 </html>
