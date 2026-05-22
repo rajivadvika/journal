@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Digital Journal & Manifestation Tracker</title>
+    <title>My Digital Journal & Visualization Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -14,6 +14,8 @@
             --card-text: #444;
             --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
             --accent: #ff7eb3;
+            --water-color: #a1c4fd;
+            --water-glow: #c2e9fb;
         }
 
         [data-theme="dark"] {
@@ -23,6 +25,8 @@
             --text-color: #f0f0f0;
             --card-text: #e0e0e0;
             --accent: #9d7cff;
+            --water-color: #4facfe;
+            --water-glow: #00f2fe;
         }
 
         * {
@@ -32,7 +36,6 @@
             transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Custom Cursor */
         body {
             font-family: 'Poppins', sans-serif;
             background: var(--bg-gradient);
@@ -42,128 +45,97 @@
             background-attachment: fixed;
             cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23ff9a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>') 12 12, auto;
             overflow-x: hidden;
+            display: flex;
         }
 
-        button, select, input, textarea { cursor: pointer; }
-        textarea, input[type="text"] { cursor: text; }
+        /* --- Global Animations --- */
+        @keyframes fadeOut { 0% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); } }
+        @keyframes floatTwinkle { 0% { transform: translateY(0) scale(0.8); opacity: 0; } 50% { opacity: 1; transform: translateY(-50px) scale(1.2); } 100% { transform: translateY(-100px) scale(0.8); opacity: 0; } }
+        @keyframes wave { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        @keyframes ripple-out { 0% { transform: scale(0); opacity: 1; } 100% { transform: scale(4); opacity: 0; } }
 
-        /* Cursor Trail */
-        .trail-particle {
-            position: fixed; width: 8px; height: 8px; background-color: #ffffff;
-            border-radius: 50%; pointer-events: none; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-            z-index: 9999; transform: translate(-50%, -50%); animation: fadeOut 0.5s ease forwards;
-        }
+        /* Background Effects */
+        #particle-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; overflow: hidden; }
+        .bg-particle { position: absolute; animation: floatTwinkle linear infinite; }
+        .trail-particle { position: fixed; width: 8px; height: 8px; background-color: white; border-radius: 50%; pointer-events: none; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8); z-index: 9999; transform: translate(-50%, -50%); animation: fadeOut 0.5s ease forwards; }
 
-        @keyframes fadeOut {
-            0% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
-        }
+        /* Main Layout */
+        .container { max-width: 900px; margin: 0 auto; width: 100%; position: relative; z-index: 1; margin-right: 100px; /* Space for sidebar */ }
 
-        /* Background Particles (Stars/Sparkles) */
-        #particle-container {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            pointer-events: none; z-index: -1; overflow: hidden;
-        }
-
-        .bg-particle {
-            position: absolute;
-            animation: floatTwinkle linear infinite;
-        }
-
-        @keyframes floatTwinkle {
-            0% { transform: translateY(0) scale(0.8); opacity: 0; }
-            50% { opacity: 1; transform: translateY(-50px) scale(1.2); }
-            100% { transform: translateY(-100px) scale(0.8); opacity: 0; }
-        }
-
-        .container { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
-
+        /* Header & Glass Buttons */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; font-family: 'Lora', serif; }
         h1 { font-size: 2.5rem; font-weight: 600; }
-
         .header-controls { display: flex; gap: 1rem; align-items: center; }
-
-        .ambient-controls, .btn-glass {
-            background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 0.5rem 1rem;
-            border-radius: 20px; cursor: pointer; backdrop-filter: blur(10px); color: var(--text-color);
-            font-family: 'Poppins', sans-serif; display: flex; align-items: center; gap: 0.5rem;
-        }
-
-        .ambient-controls select {
-            background: transparent; border: none; color: var(--text-color);
-            font-family: 'Poppins', sans-serif; outline: none; padding: 0;
-        }
+        .ambient-controls, .btn-glass, .tool-btn { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; backdrop-filter: blur(10px); color: var(--text-color); font-family: 'Poppins', sans-serif; display: flex; align-items: center; gap: 0.5rem; }
+        .ambient-controls select { background: transparent; border: none; color: var(--text-color); outline: none; padding: 0; }
 
         /* Manifestation Tracker */
-        .manifestation-tracker {
-            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--accent); border-radius: 20px; padding: 1.5rem; box-shadow: var(--shadow);
-            margin-bottom: 2rem; display: flex; flex-direction: column; gap: 1rem;
-        }
+        .manifestation-tracker { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--accent); border-radius: 20px; padding: 1.5rem; box-shadow: var(--shadow); margin-bottom: 2rem; }
+        .tracker-header { font-weight: 600; font-size: 1.1rem; color: var(--accent); margin-bottom: 1rem; }
+        .tracker-input { width: 100%; background: transparent; border: none; border-bottom: 2px dashed var(--glass-border); padding: 0.5rem 0; color: var(--text-color); font-family: 'Lora', serif; font-size: 1.2rem; outline: none; margin-bottom: 1rem;}
+        .tracker-steps { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.85rem; }
+        .tracker-steps label { display: flex; align-items: center; gap: 0.3rem; }
         
-        .tracker-header { font-weight: 600; font-size: 1.1rem; color: var(--accent); display: flex; align-items: center; gap: 0.5rem; }
-        
-        .tracker-input {
-            width: 100%; background: transparent; border: none; border-bottom: 2px dashed var(--glass-border);
-            padding: 0.5rem 0; color: var(--text-color); font-family: 'Lora', serif; font-size: 1.2rem; outline: none;
-        }
-        
-        .tracker-input::placeholder { color: var(--text-color); opacity: 0.5; }
-        
-        .tracker-steps { display: flex; gap: 2rem; font-size: 0.9rem; }
-        .tracker-steps label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
-        
-        /* Form Styling */
-        .journal-form {
-            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem; box-shadow: var(--shadow);
-            margin-bottom: 3rem;
-        }
-
-        .controls { display: flex; gap: 1rem; margin-bottom: 1rem; }
-        .template-bar { margin-bottom: 1rem; }
-
-        input[type="text"].form-input, select.form-select, textarea {
-            width: 100%; background: rgba(255, 255, 255, 0.2); border: 1px solid var(--glass-border);
-            border-radius: 10px; padding: 0.8rem; color: var(--text-color); font-family: 'Poppins', sans-serif; font-size: 1rem; outline: none;
-        }
-
-        [data-theme="dark"] input[type="text"].form-input, 
-        [data-theme="dark"] select.form-select, 
-        [data-theme="dark"] textarea { background: rgba(0, 0, 0, 0.2); }
-
-        textarea { resize: vertical; min-height: 250px; margin-bottom: 0.5rem; font-family: 'Lora', serif; line-height: 1.6; }
-
+        /* Journal Form */
+        .journal-form { background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem; box-shadow: var(--shadow); margin-bottom: 3rem; }
+        .form-select, .form-input, textarea { width: 100%; background: rgba(255, 255, 255, 0.2); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.8rem; color: var(--text-color); font-family: 'Poppins', sans-serif; font-size: 1rem; outline: none; margin-bottom: 1rem; }
+        textarea { resize: vertical; min-height: 250px; font-family: 'Lora', serif; line-height: 1.6; }
+        .form-cols { display: flex; gap: 1rem; }
         .form-footer { display: flex; justify-content: space-between; align-items: center; }
-        .word-count { font-size: 0.85rem; opacity: 0.8; }
-
-        button.save-btn {
-            background: var(--accent); color: #fff; border: none; padding: 0.6rem 1.5rem;
-            border-radius: 20px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s;
-        }
+        button.save-btn { background: var(--accent); color: #fff; border: none; padding: 0.6rem 2rem; border-radius: 20px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         button.save-btn:hover { transform: translateY(-2px); }
 
-        /* Grid */
+        /* Entries Grid */
         .entries-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-        .entry-card {
-            background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
-            border-radius: 15px; padding: 1.5rem; box-shadow: var(--shadow); position: relative;
-        }
-        .entry-header { display: flex; justify-content: space-between; margin-bottom: 1rem; opacity: 0.8; font-size: 0.9rem;}
-        .entry-title { font-family: 'Lora', serif; font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-color); }
-        .entry-content { font-size: 0.95rem; color: var(--card-text); line-height: 1.6; white-space: pre-wrap; }
-        .delete-btn { position: absolute; bottom: 1rem; right: 1rem; background: none; border: none; color: #ff6b6b; font-size: 0.9rem; opacity: 0; }
+        .entry-card { background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 15px; padding: 1.5rem; position: relative; }
+        .entry-title { font-family: 'Lora', serif; font-size: 1.3rem; margin: 0.5rem 0; }
+        .entry-content { font-size: 0.95rem; color: var(--card-text); line-height: 1.6; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+        .delete-btn { position: absolute; bottom: 1rem; right: 1rem; background: none; border: none; color: #ff6b6b; opacity: 0; cursor: pointer; }
         .entry-card:hover .delete-btn { opacity: 1; }
+
+        /* --- Visualization Sidebar --- */
+        .side-panel { position: fixed; right: 2rem; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 1rem; z-index: 100; }
+        .tool-btn { width: 60px; height: 60px; border-radius: 15px; justify-content: center; font-size: 1.5rem; flex-direction: column; gap: 0; padding: 0; position: relative; }
+        .tool-btn:hover::after { content: attr(data-label); position: absolute; right: 70px; background: var(--glass-bg); backdrop-filter: blur(10px); padding: 0.4rem 0.8rem; border-radius: 10px; font-size: 0.8rem; white-space: nowrap; border: 1px solid var(--glass-border); color: var(--text-color); }
+
+        /* --- Fullscreen Visualization Overlays --- */
+        .viz-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); z-index: 1000; display: none; justify-content: center; align-items: center; color: white; opacity: 0; transition: opacity 0.5s ease; }
+        .viz-overlay.active { display: flex; opacity: 1; }
+        .close-viz { position: absolute; top: 2rem; right: 2rem; background: none; border: none; color: white; font-size: 2rem; cursor: pointer; }
+        
+        /* Water Method Specific Styling */
+        .water-method-content { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2rem; max-width: 500px; width: 90%; }
+        
+        /* The Glass Graphic */
+        .glass-container { width: 150px; height: 250px; border: 4px solid rgba(255,255,255,0.8); border-top: none; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(255,255,255,0.2), inset 0 0 15px rgba(255,255,255,0.1); }
+        .glass-container::before { content: ''; position: absolute; top: 10px; left: 10px; width: 15px; height: 60%; background: rgba(255,255,255,0.2); border-radius: 10px; }
+        
+        .water-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: var(--water-color); box-shadow: 0 0 30px var(--water-glow), inset 0 0 20px rgba(255,255,255,0.3); transition: height 0.3s ease; overflow: hidden; }
+        
+        /* Moving Wave Effect inside water */
+        .water-fill::after { content: ''; position: absolute; top: 0; left: 0; width: 200%; height: 20px; background: rgba(255,255,255,0.5); filter: blur(5px); animation: wave 2s linear infinite; }
+
+        .viz-input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); border-radius: 15px; padding: 1rem; color: white; font-family: 'Lora', serif; font-size: 1.2rem; text-align: center; outline: none; }
+        .viz-input::placeholder { color: rgba(255,255,255,0.5); }
+        .drink-btn { background: white; color: #333; border: none; padding: 1rem 3rem; border-radius: 30px; font-weight: 600; font-size: 1.1rem; cursor: pointer; transition: transform 0.2s; display: none; }
+        .drink-btn:hover { transform: scale(1.05); }
+
+        /* Fullscreen Ripple Effect */
+        #ripple-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 2000; overflow: hidden; display: none; }
+        .ripple { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.4); box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); animation: ripple-out 1.5s ease-out forwards; }
 
     </style>
 </head>
 <body>
 
+    <!-- Background effects -->
     <div id="particle-container"></div>
+    <div id="ripple-overlay"></div>
 
+    <!-- MAIN JOURNAL CONTAINER -->
     <div class="container">
         <header>
-            <h1>My Journal</h1>
+            <h1>Journal</h1>
             <div class="header-controls">
                 <div class="ambient-controls">
                     <span>🎧</span>
@@ -171,289 +143,249 @@
                         <option value="none">Silence</option>
                         <option value="https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg">Heavy Rain</option>
                         <option value="https://actions.google.com/sounds/v1/water/waves_crashing_on_rock_beach.ogg">Ocean Waves</option>
-                        <option value="https://actions.google.com/sounds/v1/crowds/cafe_crowd_loop.ogg">Coffee Shop</option>
                     </select>
-                    <button class="btn-glass" id="play-pause-btn" onclick="toggleAudio()" style="padding: 0.2rem 0.6rem; border:none; background:transparent;">▶</button>
                 </div>
-                <button class="btn-glass" onclick="toggleTheme()">🌙 Theme</button>
+                <button class="btn-glass" onclick="toggleTheme()" id="theme-btn">🌙</button>
             </div>
         </header>
 
         <!-- Manifestation Tracker -->
         <div class="manifestation-tracker">
-            <div class="tracker-header">✨ Active Manifestation Focus</div>
+            <div class="tracker-header">✨ Daily Manifestation Focus</div>
             <input type="text" class="tracker-input" id="manifestation-goal" placeholder="I am so happy and grateful now that..." onkeyup="saveTracker()">
             <div class="tracker-steps">
                 <label><input type="checkbox" id="m-morning" onchange="saveTracker()"> Morning (3x)</label>
                 <label><input type="checkbox" id="m-afternoon" onchange="saveTracker()"> Afternoon (6x)</label>
-                <label><input type="checkbox" id="m-night" onchange="saveTracker()"> Night (9x) / Pillow Method</label>
-                <button class="btn-glass" style="margin-left:auto; font-size:0.8rem; padding: 0.2rem 0.8rem;" onclick="resetTracker()">Reset Day</button>
+                <label><input type="checkbox" id="m-night" onchange="saveTracker()"> Night (9x)</label>
+                <button class="btn-glass" style="margin-left:auto; font-size:0.75rem; padding: 0.3rem 0.7rem;" onclick="resetTracker()">Reset Day</button>
             </div>
         </div>
 
-        <!-- Form -->
+        <!-- Journal Form -->
         <div class="journal-form">
-            <div class="template-bar">
-                <select class="form-select" id="template-select" onchange="applyTemplate()">
-                    <option value="">📝 Start blank or choose a template...</option>
-                    <option value="gratitude">🙏 Daily Gratitude</option>
-                    <option value="369">🔢 3-6-9 Method Entry</option>
-                    <option value="scripting">✍️ Future Self Scripting</option>
-                    <option value="pillow">🛌 Pillow Method Intention</option>
-                </select>
-            </div>
-
-            <div class="controls">
-                <input type="text" class="form-input" id="entry-title" placeholder="Give your entry a title...">
-                <select class="form-select" id="entry-mood" style="width: 150px;">
+            <select class="form-select" id="template-select" onchange="applyTemplate()">
+                <option value="">📝 New Blank Entry</option>
+                <option value="gratitude">🙏 Daily Gratitude</option>
+                <option value="369">🔢 3-6-9 Method</option>
+            </select>
+            <div class="form-cols">
+                <input type="text" class="form-input" id="entry-title" placeholder="Entry Title">
+                <select class="form-select" id="entry-mood" style="width: 130px;">
                     <option value="😊">😊 Happy</option>
+                    <option value="✨">✨ PURE VIBES</option>
                     <option value="😌">😌 Calm</option>
-                    <option value="✨">✨ Manifesting</option>
-                    <option value="✈️">✈️ Adventurous</option>
-                    <option value="😔">😔 Processing</option>
                 </select>
             </div>
-            
-            <textarea id="entry-content" placeholder="Dear journal, today..." onkeyup="handleTyping(event)"></textarea>
-            
+            <textarea id="entry-content" placeholder="Start writing..." onkeyup="handleTyping(event)"></textarea>
             <div class="form-footer">
                 <span class="word-count">Words: <span id="word-counter">0</span></span>
-                <button class="save-btn" onclick="saveEntry()">Save Entry</button>
+                <button class="save-btn" onclick="saveEntry()">Save Memory</button>
             </div>
         </div>
 
         <div class="entries-grid" id="entries-container"></div>
     </div>
 
+    <!-- PRETTY SIDE PANEL FOR TOOLS -->
+    <div class="side-panel">
+        <button class="tool-btn" data-label="Water Method" onclick="openVisualization('water')">💧</button>
+        <button class="tool-btn" data-label="Vision Portal" onclick="openVisualization('vision')" style="opacity:0.5;">🖼️</button>
+        <button class="tool-btn" data-label="Future Scripting" onclick="openVisualization('script')" style="opacity:0.5;">✍️</button>
+    </div>
+
+    <!-- VISUALIZATION OVERLAYS -->
+    
+    <!-- 1. Water Method -->
+    <div id="water-viz" class="viz-overlay">
+        <button class="close-viz" onclick="closeVisualization()">×</button>
+        <div class="water-method-content">
+            <h2 style="font-family:'Lora', serif; font-size: 2rem;">The Water Method</h2>
+            <p style="opacity: 0.8; font-size: 0.9rem;">Type your intention below. Feel it charging the water. <br> Maximize your character count to fill the glass.</p>
+            
+            <!-- Glass Graphic -->
+            <div class="glass-container">
+                <div id="water-fill" class="water-fill"></div>
+            </div>
+
+            <input type="text" id="water-intention" class="viz-input" placeholder="My intention is..." onkeyup="handleWaterTyping(event)">
+            
+            <button id="drink-btn" class="drink-btn" onclick="drinkWater()">Drink & Manifest</button>
+        </div>
+    </div>
+
     <audio id="ambient-audio" loop></audio>
 
     <script>
-        // --- TEMPLATES LOGIC ---
+        // --- TEMPLATES ---
         const templates = {
-            gratitude: "Today, I am deeply grateful for:\n1. \n2. \n3. \n\nSomething wonderful that happened today:\n- \n\nMy intention for tomorrow:\n- ",
-            
-            369: "My focus for today: [Insert Affirmation]\n\nMorning (Write 3 times):\n1. \n2. \n3. \n\nAfternoon (Write 6 times):\n1. \n2. \n3. \n4. \n5. \n6. \n\nEvening (Write 9 times):\n1. \n2. \n3. \n4. \n5. \n6. \n7. \n8. \n9. ",
-            
-            scripting: "Date: [A date in the future]\n\nI am so happy and grateful now that... \n[Describe your desire in present tense, focusing heavily on how it feels. Engage all your senses. Who is with you? What are you experiencing?]",
-            
-            pillow: "My core affirmation to absorb tonight is:\n- \n\nAs I drift off to sleep, I am leaving behind any doubts. I am stepping into the reality where this is already mine. It is done."
+            gratitude: "Top 3 things I am grateful for today:\n1. \n2. \n3. \n\nOne amazing thing that happened:",
+            369: "Affirmation:\n\nMorning (3x):\n\n\nAfternoon (6x):\n\n\n\n\n\nNight (9x):"
         };
+        function applyTemplate() { const s = document.getElementById('template-select').value; if(s) document.getElementById('entry-content').value = templates[s]; updateWordCount(); }
 
-        function applyTemplate() {
-            const select = document.getElementById('template-select');
-            const textarea = document.getElementById('entry-content');
-            const titleInput = document.getElementById('entry-title');
-            
-            if (select.value && templates[select.value]) {
-                if (textarea.value.trim() !== "" && !confirm("This will overwrite your current writing. Continue?")) {
-                    select.value = "";
-                    return;
-                }
-                textarea.value = templates[select.value];
-                
-                // Auto-set titles based on template
-                if(select.value === '369') titleInput.value = "3-6-9 Focus";
-                if(select.value === 'scripting') titleInput.value = "Scripting Entry";
-                if(select.value === 'pillow') titleInput.value = "Pillow Method Setup";
-                if(select.value === 'gratitude') titleInput.value = "Daily Gratitude";
-                
-                updateWordCount();
-            }
-        }
-
-        // --- MANIFESTATION TRACKER LOGIC ---
+        // --- MANIFESTATION TRACKER ---
         function loadTracker() {
             document.getElementById('manifestation-goal').value = localStorage.getItem('mGoal') || '';
             document.getElementById('m-morning').checked = localStorage.getItem('mMorning') === 'true';
             document.getElementById('m-afternoon').checked = localStorage.getItem('mAfternoon') === 'true';
             document.getElementById('m-night').checked = localStorage.getItem('mNight') === 'true';
         }
-
         function saveTracker() {
             localStorage.setItem('mGoal', document.getElementById('manifestation-goal').value);
             localStorage.setItem('mMorning', document.getElementById('m-morning').checked);
             localStorage.setItem('mAfternoon', document.getElementById('m-afternoon').checked);
             localStorage.setItem('mNight', document.getElementById('m-night').checked);
         }
+        function resetTracker() { document.getElementById('m-morning').checked = document.getElementById('m-afternoon').checked = document.getElementById('m-night').checked = false; saveTracker(); }
 
-        function resetTracker() {
-            document.getElementById('m-morning').checked = false;
-            document.getElementById('m-afternoon').checked = false;
-            document.getElementById('m-night').checked = false;
-            saveTracker();
-        }
-
-        // --- PARTICLES LOGIC (Stars & Sparkles) ---
+        // --- BACKGROUND EFFECTS (Particles & Trail) ---
         function generateParticles() {
-            const container = document.getElementById('particle-container');
-            container.innerHTML = '';
+            const container = document.getElementById('particle-container'); container.innerHTML = '';
             const isDark = document.body.getAttribute('data-theme') === 'dark';
-            const particleCount = 30; // Amount of particles floating around
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'bg-particle';
-                
-                // Set content based on theme
-                if (isDark) {
-                    particle.innerText = ['⭐', '✨', '✦', '·'][Math.floor(Math.random() * 4)];
-                    particle.style.color = 'rgba(255, 255, 255, 0.7)';
-                    particle.style.fontSize = Math.random() * 15 + 5 + 'px';
-                } else {
-                    particle.innerText = ['✨', '🌸', '💖'][Math.floor(Math.random() * 3)];
-                    particle.style.fontSize = Math.random() * 20 + 10 + 'px';
-                    particle.style.opacity = '0.6';
-                }
-
-                // Random positioning and animation duration
-                particle.style.left = Math.random() * 100 + 'vw';
-                particle.style.top = Math.random() * 100 + 'vh';
-                particle.style.animationDuration = Math.random() * 10 + 5 + 's';
-                particle.style.animationDelay = Math.random() * 5 + 's';
-
-                container.appendChild(particle);
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div'); p.className = 'bg-particle';
+                if (isDark) { p.innerText = ['⭐', '✨', '✦'][Math.floor(Math.random() * 3)]; p.style.fontSize = Math.random() * 10 + 5 + 'px'; p.style.color = 'white';} 
+                else { p.innerText = ['✨', 'sparkle'][Math.floor(Math.random() * 2)]; p.style.fontSize = Math.random() * 15 + 10 + 'px'; p.style.opacity = '0.3'; }
+                p.style.left = Math.random() * 100 + 'vw'; p.style.top = Math.random() * 100 + 'vh';
+                p.style.animationDuration = Math.random() * 10 + 5 + 's'; container.appendChild(p);
             }
         }
-
-        // --- CURSOR TRAIL LOGIC ---
         document.addEventListener('mousemove', function(e) {
-            if(Math.random() > 0.5) return; // Reduce trail density slightly for performance
-            const particle = document.createElement('div');
-            particle.className = 'trail-particle';
-            particle.style.left = e.clientX + 'px';
-            particle.style.top = e.clientY + 'px';
-            
-            const isDark = document.body.getAttribute('data-theme') === 'dark';
-            particle.style.backgroundColor = isDark ? '#9d7cff' : '#ff9a9e';
-            
-            document.body.appendChild(particle);
-            setTimeout(() => particle.remove(), 500);
+            const p = document.createElement('div'); p.className = 'trail-particle'; p.style.left = e.clientX + 'px'; p.style.top = e.clientY + 'px';
+            p.style.backgroundColor = document.body.getAttribute('data-theme') === 'dark' ? '#9d7cff' : '#ff9a9e';
+            document.body.appendChild(p); setTimeout(() => p.remove(), 500);
         });
 
-        // --- TYPING SOUND LOGIC ---
+        // --- TYPING SOUNDS ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playTypeSound() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'sine'; osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.04);
+            gain.gain.setValueAtTime(0.03, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + 0.04);
         }
+        function handleTyping(e) { updateWordCount(); if (!['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) playTypeSound(); }
 
-        function handleTyping(e) {
-            updateWordCount();
-            if (!['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) playTypeSound();
-        }
-
-        // --- BACKGROUND AUDIO LOGIC ---
+        // --- BACKGROUND AUDIO ---
         const audioEl = document.getElementById('ambient-audio');
-        const playBtn = document.getElementById('play-pause-btn');
+        function changeSound() { const s = document.getElementById('bg-sound').value; if(s==='none'){ audioEl.pause(); audioEl.src=''; } else { audioEl.src=s; audioEl.play(); } }
 
-        function changeSound() {
-            const select = document.getElementById('bg-sound');
-            if (select.value === 'none') {
-                audioEl.pause(); playBtn.innerText = '▶'; audioEl.src = '';
-            } else {
-                audioEl.src = select.value;
-                audioEl.play().then(() => playBtn.innerText = '⏸').catch(e => console.log("Audio needs interaction"));
-            }
-        }
-
-        function toggleAudio() {
-            if (audioEl.src === '' || audioEl.src.includes(window.location.href)) return;
-            if (audioEl.paused) { audioEl.play(); playBtn.innerText = '⏸'; } 
-            else { audioEl.pause(); playBtn.innerText = '▶'; }
-        }
-
-        // --- CORE JOURNAL LOGIC ---
+        // --- JOURNAL LOGIC ---
         let entries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+        function updateWordCount() { const t = document.getElementById('entry-content').value; document.getElementById('word-counter').innerText = t.trim() === '' ? 0 : t.trim().split(/\s+/).length; }
+        function saveEntry(specificData = null) {
+            let title = document.getElementById('entry-title').value;
+            let content = document.getElementById('entry-content').value;
+            let mood = document.getElementById('entry-mood').value;
 
-        window.onload = () => {
-            renderEntries();
-            checkSavedTheme();
-            loadTracker();
-            generateParticles();
-        };
+            if(specificData){ title=specificData.title; content=specificData.content; mood=specificData.mood; }
+            if (!content.trim()) return;
 
-        function updateWordCount() {
-            const text = document.getElementById('entry-content').value;
-            const count = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-            document.getElementById('word-counter').innerText = count;
+            const entry = { id: Date.now(), title: title || "Untitled", content, mood, date: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) };
+            entries.unshift(entry); localStorage.setItem('journalEntries', JSON.stringify(entries));
+            document.getElementById('entry-title').value = document.getElementById('entry-content').value = ''; updateWordCount(); renderEntries();
         }
-
-        function saveEntry() {
-            const titleInput = document.getElementById('entry-title').value;
-            const contentInput = document.getElementById('entry-content').value;
-            const moodInput = document.getElementById('entry-mood').value;
-
-            if (!contentInput.trim()) return alert("Please write something!");
-
-            const newEntry = {
-                id: Date.now(),
-                title: titleInput || "Untitled Entry",
-                content: contentInput,
-                mood: moodInput,
-                date: new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-            };
-
-            entries.unshift(newEntry);
-            localStorage.setItem('journalEntries', JSON.stringify(entries));
-
-            document.getElementById('entry-title').value = '';
-            document.getElementById('entry-content').value = '';
-            document.getElementById('template-select').value = '';
-            updateWordCount();
-            renderEntries();
-        }
-
-        function deleteEntry(id) {
-            entries = entries.filter(entry => entry.id !== id);
-            localStorage.setItem('journalEntries', JSON.stringify(entries));
-            renderEntries();
-        }
-
+        function deleteEntry(id) { entries = entries.filter(e => e.id !== id); localStorage.setItem('journalEntries', JSON.stringify(entries)); renderEntries(); }
         function renderEntries() {
-            const container = document.getElementById('entries-container');
-            container.innerHTML = '';
-            entries.forEach(entry => {
-                const card = document.createElement('div');
-                card.className = 'entry-card';
-                card.innerHTML = `
-                    <div class="entry-header"><span>${entry.date}</span><span>${entry.mood}</span></div>
-                    <h3 class="entry-title">${escapeHTML(entry.title)}</h3>
-                    <div class="entry-content">${escapeHTML(entry.content)}</div>
-                    <button class="delete-btn" onclick="deleteEntry(${entry.id})">Delete</button>
-                `;
+            const container = document.getElementById('entries-container'); container.innerHTML = '';
+            entries.forEach(e => {
+                const card = document.createElement('div'); card.className = 'entry-card';
+                card.innerHTML = `<div style="display:flex;justify-content:space-between;opacity:0.6;font-size:0.8rem;"><span>${e.date}</span><span>${e.mood}</span></div><h3 class="entry-title">${escapeHTML(e.title)}</h3><div class="entry-content">${escapeHTML(e.content)}</div><button class="delete-btn" onclick="deleteEntry(${e.id})">🗑️</button>`;
                 container.appendChild(card);
             });
         }
-
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
-        }
+        function escapeHTML(str) { return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t])); }
 
         // --- THEME LOGIC ---
         function toggleTheme() {
-            const body = document.body;
-            const isDark = body.getAttribute('data-theme') === 'dark';
-            if(isDark) {
-                body.removeAttribute('data-theme');
-                localStorage.setItem('journalTheme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                localStorage.setItem('journalTheme', 'dark');
-            }
-            generateParticles(); // Refresh particles for new theme
+            const b = document.body; const isDark = b.getAttribute('data-theme') === 'dark';
+            isDark ? b.removeAttribute('data-theme') : b.setAttribute('data-theme', 'dark');
+            localStorage.setItem('journalTheme', isDark ? 'light' : 'dark');
+            document.getElementById('theme-btn').innerText = isDark ? '🌙' : '☀️'; generateParticles();
         }
 
-        function checkSavedTheme() {
-            if (localStorage.getItem('journalTheme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+        // --- VISUALIZATION MASTER LOGIC ---
+        function openVisualization(type) {
+            if(type === 'water') document.getElementById('water-viz').classList.add('active');
+            // Add other types here later
         }
+        function closeVisualization() {
+            document.querySelectorAll('.viz-overlay').forEach(el => el.classList.remove('active'));
+            // Reset water form
+            document.getElementById('water-intention').value = '';
+            document.getElementById('water-fill').style.height = '0%';
+            document.getElementById('drink-btn').style.display = 'none';
+        }
+
+        // --- WATER METHOD LOGIC ---
+        function handleWaterTyping(e) {
+            playTypeSound();
+            const input = document.getElementById('water-intention');
+            const fill = document.getElementById('water-fill');
+            const drinkBtn = document.getElementById('drink-btn');
+            
+            // Calculate fill based on text length (max 50 chars for full glass)
+            const maxChars = 50;
+            let percent = (input.value.length / maxChars) * 100;
+            if(percent > 100) percent = 100;
+            
+            fill.style.height = percent + '%';
+
+            // Show drink button if there is text
+            drinkBtn.style.display = input.value.length > 5 ? 'block' : 'none';
+        }
+
+        function drinkWater() {
+            const intention = document.getElementById('water-intention').value;
+            
+            // 1. Play full screen ripple effect
+            triggerFullscreenRipple();
+
+            // 2. Clear visualizer after ripple starts
+            setTimeout(() => {
+                // 3. Save intention as a journal entry
+                saveEntry({
+                    title: "Water Manifestation Charged",
+                    content: `I drank charged water holding the intention:\n\n"${intention}"\n\nIt is done.`,
+                    mood: "💧"
+                });
+                closeVisualization();
+            }, 1000);
+        }
+
+        function triggerFullscreenRipple() {
+            const overlay = document.getElementById('ripple-overlay');
+            overlay.style.display = 'block';
+            overlay.innerHTML = ''; // Clear old ripples
+
+            // Create 3 concentric ripples
+            for(let i=0; i<3; i++){
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                
+                // Randomize center slightly for organic feel
+                const x = window.innerWidth / 2 + (Math.random()*100 - 50);
+                const y = window.innerHeight / 2 + (Math.random()*100 - 50);
+                
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.style.width = ripple.style.height = '100px';
+                ripple.style.animationDelay = (i * 0.2) + 's';
+                
+                overlay.appendChild(ripple);
+            }
+
+            // Hide overlay after animation plays
+            setTimeout(() => { overlay.style.display = 'none'; }, 2000);
+        }
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            if (localStorage.getItem('journalTheme') === 'dark') toggleTheme(); // Set initial theme
+            renderEntries(); loadTracker(); generateParticles();
+        };
     </script>
 </body>
 </html>
