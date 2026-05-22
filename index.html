@@ -3,139 +3,109 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Daily Journal</title>
+<title>Journal Garden</title>
 
 <style>
 :root{
   --bg:#f7f6f3;
   --card:#ffffffcc;
   --text:#1f2937;
-  --muted:#6b7280;
-  --accent:#a78bfa;
-  --shadow: 0 10px 30px rgba(0,0,0,0.06);
-}
-
-[data-theme="dark"]{
-  --bg:#0f172a;
-  --card:#111827cc;
-  --text:#e5e7eb;
-  --muted:#94a3b8;
-  --shadow: 0 10px 30px rgba(0,0,0,0.4);
-}
-
-*{
-  box-sizing:border-box;
-  font-family: ui-sans-serif, system-ui;
 }
 
 body{
   margin:0;
+  font-family:system-ui;
   background:var(--bg);
   color:var(--text);
-  transition:0.4s ease;
 }
 
+/* layout */
 .app{
   display:grid;
-  grid-template-columns: 280px 1fr;
-  height:100vh;
-}
-
-/* SIDEBAR */
-.sidebar{
+  grid-template-columns: 1fr;
+  gap:20px;
   padding:20px;
-  border-right:1px solid rgba(150,150,150,0.1);
-  overflow:auto;
-}
-
-.logo{
-  font-size:22px;
-  font-weight:700;
-  margin-bottom:20px;
-}
-
-.btn{
-  background:var(--card);
-  border:none;
-  padding:12px;
-  border-radius:12px;
-  cursor:pointer;
-  margin:6px 0;
-  width:100%;
-  color:var(--text);
-  box-shadow:var(--shadow);
-  text-align:left;
-  transition:0.2s;
-}
-
-.btn:hover{transform:translateY(-2px);}
-
-.small{
-  font-size:12px;
-  color:var(--muted);
-}
-
-/* MAIN */
-.main{
-  padding:30px;
-  overflow:auto;
+  max-width:900px;
+  margin:auto;
 }
 
 .card{
   background:var(--card);
-  box-shadow:var(--shadow);
-  border-radius:22px;
-  padding:22px;
-  backdrop-filter: blur(12px);
+  padding:20px;
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
 }
 
-/* FLOWER 🌸 */
-.flower-wrap{
+/* flower preview */
+.preview{
+  height:180px;
   display:flex;
-  justify-content:center;
   align-items:flex-end;
-  height:160px;
-  margin-bottom:10px;
+  justify-content:center;
 }
 
 .stem{
   width:6px;
-  height:20px;
   background:#22c55e;
   border-radius:10px;
-  transition:0.3s ease;
+  transition:0.3s;
 }
 
 .flower{
-  position:relative;
   display:flex;
   flex-direction:column;
   align-items:center;
 }
 
 .petals{
-  width:30px;
-  height:30px;
+  width:28px;
+  height:28px;
   border-radius:50%;
-  background:radial-gradient(circle, #f472b6, #a78bfa);
   position:absolute;
-  top:-20px;
-  opacity:0.2;
-  transform:scale(0.5);
-  transition:0.3s ease;
+  margin-top:-18px;
+  transition:0.3s;
+  opacity:0.3;
 }
 
-/* TEXTAREA */
+/* textarea */
 textarea{
   width:100%;
-  height:220px;
+  height:160px;
   border:none;
   outline:none;
+  font-size:16px;
   background:transparent;
   resize:none;
-  font-size:16px;
-  line-height:1.7;
-  color:var(--text);
+}
+
+/* garden */
+.garden{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(80px,1fr));
+  gap:12px;
+  margin-top:10px;
+}
+
+.plant{
+  height:120px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  position:relative;
+}
+
+.plantStem{
+  width:5px;
+  background:#16a34a;
+  border-radius:10px;
+}
+
+.plantFlower{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  position:absolute;
+  top:10px;
 }
 </style>
 </head>
@@ -144,54 +114,100 @@ textarea{
 
 <div class="app">
 
-<div class="sidebar">
-  <div class="logo">🌿 Journal</div>
-</div>
+<div class="card">
 
-<div class="main">
+  <h2>🌿 Write your garden</h2>
 
-  <div class="card">
-
-    <div class="flower-wrap">
-      <div class="flower">
-        <div class="stem" id="stem"></div>
-        <div class="petals" id="petals"></div>
-      </div>
+  <div class="preview">
+    <div class="flower">
+      <div id="stem" class="stem"></div>
+      <div id="petals" class="petals"></div>
     </div>
-
-    <textarea id="text" placeholder="Start typing..."></textarea>
-
   </div>
 
+  <textarea id="text" placeholder="Write something..."></textarea>
+
+  <button onclick="saveEntry()">Save to Garden 🌸</button>
+</div>
+
+<div class="card">
+  <h3>🌼 Your Garden</h3>
+  <div id="garden" class="garden"></div>
 </div>
 
 </div>
 
 <script>
 
+let data = JSON.parse(localStorage.getItem("garden") || "[]");
+
 const text = document.getElementById("text");
 const stem = document.getElementById("stem");
 const petals = document.getElementById("petals");
 
-function updateFlower(){
+const moodColors = {
+  happy:"#f472b6",
+  calm:"#60a5fa",
+  deep:"#a78bfa",
+  fire:"#f97316"
+};
+
+/* live plant growth */
+function growLivePlant(){
 
   let len = text.value.length;
 
-  // Stem grows with text
-  let height = Math.min(180, 20 + len * 2);
-  stem.style.height = height + "px";
+  let h = Math.min(160, 20 + len * 2);
+  stem.style.height = h + "px";
 
-  // Flower blooms with text
-  let bloom = Math.min(1, len / 80);
+  let bloom = Math.min(1, len / 100);
 
-  petals.style.opacity = 0.2 + bloom * 0.8;
+  petals.style.background = "#a78bfa";
+  petals.style.opacity = 0.2 + bloom;
   petals.style.transform = `scale(${0.5 + bloom})`;
 }
 
-/* typing */
-text.addEventListener("input", updateFlower);
+text.addEventListener("input", growLivePlant);
 
-updateFlower();
+/* save entry as plant */
+function saveEntry(){
+
+  const entry = {
+    text: text.value,
+    len: text.value.length
+  };
+
+  data.push(entry);
+  localStorage.setItem("garden", JSON.stringify(data));
+
+  text.value = "";
+  growLivePlant();
+  renderGarden();
+}
+
+/* render garden */
+function renderGarden(){
+
+  const garden = document.getElementById("garden");
+  garden.innerHTML = "";
+
+  data.forEach(e => {
+
+    let height = Math.min(100, 20 + e.len * 1.5);
+
+    let color = Object.values(moodColors)[Math.floor(Math.random()*4)];
+
+    garden.innerHTML += `
+      <div class="plant">
+        <div class="plantStem" style="height:${height}px"></div>
+        <div class="plantFlower" style="background:${color}"></div>
+      </div>
+    `;
+  });
+}
+
+growLivePlant();
+renderGarden();
 
 </script>
 
