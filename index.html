@@ -75,18 +75,6 @@ body{
   color:var(--muted);
 }
 
-.mode-btn{
-  padding:10px;
-  border-radius:10px;
-  cursor:pointer;
-  margin:5px 0;
-  background:rgba(120,120,120,0.1);
-}
-
-.mode-btn.active{
-  outline:2px solid var(--accent);
-}
-
 /* MAIN */
 .main{
   padding:30px;
@@ -101,6 +89,42 @@ body{
   backdrop-filter: blur(12px);
 }
 
+/* FLOWER 🌸 */
+.flower-wrap{
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  height:160px;
+  margin-bottom:10px;
+}
+
+.stem{
+  width:6px;
+  height:20px;
+  background:#22c55e;
+  border-radius:10px;
+  transition:0.3s ease;
+}
+
+.flower{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.petals{
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:radial-gradient(circle, #f472b6, #a78bfa);
+  position:absolute;
+  top:-20px;
+  opacity:0.2;
+  transform:scale(0.5);
+  transition:0.3s ease;
+}
+
 /* TEXTAREA */
 textarea{
   width:100%;
@@ -113,53 +137,6 @@ textarea{
   line-height:1.7;
   color:var(--text);
 }
-
-/* MOOD */
-.mood{
-  font-size:24px;
-  cursor:pointer;
-  opacity:0.6;
-}
-
-.mood.active{
-  opacity:1;
-  transform:scale(1.2);
-}
-
-/* INPUT */
-input{
-  padding:10px;
-  border-radius:12px;
-  border:none;
-  background:rgba(120,120,120,0.1);
-  color:var(--text);
-  width:100%;
-}
-
-/* CALENDAR */
-.calendar{
-  display:grid;
-  grid-template-columns:repeat(7,1fr);
-  gap:10px;
-}
-
-.day{
-  padding:12px;
-  border-radius:12px;
-  background:rgba(120,120,120,0.08);
-  text-align:center;
-  cursor:pointer;
-}
-
-.day.hasEntry{
-  outline:1px solid var(--accent);
-}
-
-hr{
-  margin:20px 0;
-  border:0;
-  border-top:1px solid rgba(120,120,120,0.15);
-}
 </style>
 </head>
 
@@ -167,57 +144,23 @@ hr{
 
 <div class="app">
 
-<!-- SIDEBAR -->
 <div class="sidebar">
-
   <div class="logo">🌿 Journal</div>
-
-  <button class="btn" onclick="newEntry()">+ New Entry</button>
-  <button class="btn" onclick="toggleTheme()">Toggle Theme</button>
-
-  <hr/>
-
-  <div class="small">Reflection Modes</div>
-
-  <div class="mode-btn" onclick="setMode('peace')">🌿 Peace Mode</div>
-  <div class="mode-btn" onclick="setMode('gratitude')">☀️ Gratitude Mode</div>
-  <div class="mode-btn" onclick="setMode('deep')">🌙 Deep Mode</div>
-  <div class="mode-btn" onclick="setMode('memory')">🎧 Memory Mode</div>
-
-  <hr/>
-
-  <div class="small">Search</div>
-  <input id="search" oninput="renderList()" placeholder="Search..."/>
-
-  <hr/>
-
-  <div id="list"></div>
-
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
   <div class="card">
 
-    <div class="small" id="modeLabel">Mode</div>
-
-    <div style="display:flex;gap:10px;margin:10px 0;">
-      <span class="mood" onclick="setMood('😊')">😊</span>
-      <span class="mood" onclick="setMood('😌')">😌</span>
-      <span class="mood" onclick="setMood('😔')">😔</span>
-      <span class="mood" onclick="setMood('🔥')">🔥</span>
+    <div class="flower-wrap">
+      <div class="flower">
+        <div class="stem" id="stem"></div>
+        <div class="petals" id="petals"></div>
+      </div>
     </div>
 
-    <textarea id="text"></textarea>
+    <textarea id="text" placeholder="Start typing..."></textarea>
 
-  </div>
-
-  <hr/>
-
-  <div class="card">
-    <div class="small">Calendar</div>
-    <div class="calendar" id="calendar"></div>
   </div>
 
 </div>
@@ -226,165 +169,29 @@ hr{
 
 <script>
 
-let currentDate = new Date().toISOString().split("T")[0];
-let data = JSON.parse(localStorage.getItem("journal") || "{}");
+const text = document.getElementById("text");
+const stem = document.getElementById("stem");
+const petals = document.getElementById("petals");
 
-let currentMood = "";
-let currentMode = "peace";
+function updateFlower(){
 
-/* MODES */
-const modes = {
-  peace:{
-    label:"🌿 Peace Mode",
-    placeholder:"What made today feel calm?"
-  },
-  gratitude:{
-    label:"☀️ Gratitude Mode",
-    placeholder:"What are you grateful for today?"
-  },
-  deep:{
-    label:"🌙 Deep Mode",
-    placeholder:"What are you avoiding thinking about?"
-  },
-  memory:{
-    label:"🎧 Memory Mode",
-    placeholder:"What moment will stay with you today?"
-  }
-};
+  let len = text.value.length;
 
-/* SET MODE */
-function setMode(mode){
-  currentMode = mode;
-  updateModeUI();
-  save();
+  // Stem grows with text
+  let height = Math.min(180, 20 + len * 2);
+  stem.style.height = height + "px";
+
+  // Flower blooms with text
+  let bloom = Math.min(1, len / 80);
+
+  petals.style.opacity = 0.2 + bloom * 0.8;
+  petals.style.transform = `scale(${0.5 + bloom})`;
 }
 
-/* UPDATE MODE UI */
-function updateModeUI(){
+/* typing */
+text.addEventListener("input", updateFlower);
 
-  document.getElementById("text").placeholder =
-    modes[currentMode].placeholder;
-
-  document.getElementById("modeLabel").innerText =
-    modes[currentMode].label;
-
-  document.querySelectorAll(".mode-btn").forEach(el=>{
-    el.classList.remove("active");
-  });
-
-  document.querySelectorAll(".mode-btn").forEach(el=>{
-    if(el.innerText.includes(modes[currentMode].label.split(" ")[0])){
-      el.classList.add("active");
-    }
-  });
-}
-
-/* SAVE */
-function save(){
-
-  data[currentDate] = {
-    text: document.getElementById("text").value,
-    mood: currentMood,
-    mode: currentMode
-  };
-
-  localStorage.setItem("journal", JSON.stringify(data));
-
-  renderList();
-  renderCalendar();
-}
-
-/* LOAD */
-function load(date){
-
-  currentDate = date;
-
-  let entry = data[date] || {};
-
-  document.getElementById("text").value = entry.text || "";
-
-  currentMood = entry.mood || "";
-  currentMode = entry.mode || "peace";
-
-  updateModeUI();
-  updateMoodUI();
-}
-
-/* NEW ENTRY */
-function newEntry(){
-  load(new Date().toISOString().split("T")[0]);
-}
-
-/* TEXT */
-document.getElementById("text").addEventListener("input", save);
-
-/* MOOD */
-function setMood(m){
-  currentMood = m;
-  updateMoodUI();
-  save();
-}
-
-function updateMoodUI(){
-  document.querySelectorAll(".mood").forEach(el=>{
-    el.classList.toggle("active", el.innerText === currentMood);
-  });
-}
-
-/* SEARCH */
-function renderList(){
-
-  let q = document.getElementById("search").value.toLowerCase();
-
-  let list = Object.keys(data)
-    .filter(d => JSON.stringify(data[d]).toLowerCase().includes(q))
-    .sort()
-    .reverse();
-
-  document.getElementById("list").innerHTML =
-    list.map(d=>`
-      <div class="btn" onclick="load('${d}')">
-        ${d} ${data[d].mood || ""}
-      </div>
-    `).join("");
-}
-
-/* CALENDAR */
-function renderCalendar(){
-
-  let cal = document.getElementById("calendar");
-  cal.innerHTML = "";
-
-  for(let i=1;i<=30;i++){
-
-    let d = new Date();
-    d.setDate(i);
-
-    let date = d.toISOString().split("T")[0];
-
-    let has = data[date] ? "hasEntry" : "";
-
-    cal.innerHTML += `
-      <div class="day ${has}" onclick="load('${date}')">
-        ${i}
-      </div>
-    `;
-  }
-}
-
-/* THEME */
-function toggleTheme(){
-  document.body.dataset.theme =
-    document.body.dataset.theme === "dark"
-      ? "light"
-      : "dark";
-}
-
-/* INIT */
-load(currentDate);
-renderList();
-renderCalendar();
-updateModeUI();
+updateFlower();
 
 </script>
 
