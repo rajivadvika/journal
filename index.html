@@ -1,362 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cottagecore Living Journal</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Living Memory World Prototype</title>
 
 <style>
-/* =========================
-   🌸 COTTAGECORE THEME
-========================= */
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-
-:root{
-  --bg:#f6f1e7;
-  --bg2:#efe6d6;
-  --text:#3b2f2f;
-  --card:rgba(255, 250, 240, 0.85);
-  --accent:#b07d62;
-  --accent2:#8fbc8f;
-  --glow:rgba(176,125,98,0.25);
-  --shadow:0 8px 25px rgba(0,0,0,0.08);
-  --border:rgba(80,60,50,0.12);
-}
-
 body{
-  font-family:'Georgia', serif;
-  background:
-    radial-gradient(circle at top, rgba(255,255,255,0.5), transparent 60%),
-    linear-gradient(135deg,var(--bg),var(--bg2));
-  color:var(--text);
-  min-height:100vh;
-  overflow-x:hidden;
+  margin:0;
+  font-family:system-ui;
+  overflow:hidden;
+  background:#0f1220;
+  color:white;
 }
 
-/* Night = candle forest */
-body.night{
-  --bg:#1a1410;
-  --bg2:#231b16;
-  --text:#f3e9dc;
-  --card:rgba(40,30,25,0.75);
-  --accent:#d8a48f;
-  --accent2:#9dbf9e;
-  --glow:rgba(216,164,143,0.3);
-}
-
-/* soft paper texture */
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:url("https://www.transparenttextures.com/patterns/paper-fibers.png");
-  opacity:0.25;
-  pointer-events:none;
-  z-index:0;
-}
-
-/* =========================
-   LAYOUT
-========================= */
-
-.app{
+/* LAYOUT */
+.wrap{
   display:grid;
-  grid-template-columns:240px 1fr 280px;
-  min-height:100vh;
+  grid-template-columns:1.2fr 0.8fr;
+  height:100vh;
+}
+
+/* WORLD */
+.world{
   position:relative;
-  z-index:1;
+  overflow:hidden;
+  background:radial-gradient(circle at center, #1a1f3a, #070a14);
 }
 
-@media(max-width:900px){
-  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto}
-}
-
-/* =========================
-   TOP BAR
-========================= */
-
-.topbar{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  height:60px;
-  background:var(--card);
+/* avatar */
+.avatar{
+  position:absolute;
+  top:40px;
+  left:40px;
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  background:linear-gradient(145deg,#5eead4,#60a5fa);
+  box-shadow:0 0 20px rgba(96,165,250,0.5);
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  padding:0 24px;
-  border-bottom:1px solid var(--border);
-  backdrop-filter:blur(10px);
+  justify-content:center;
+  font-size:30px;
+  transition:0.4s ease;
+  animation: breathe 3s infinite ease-in-out;
 }
 
-.logo{
-  font-size:1.2rem;
-  font-weight:600;
+@keyframes breathe{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.05);}
+  100%{transform:scale(1);}
 }
 
-.stat{
-  background:linear-gradient(135deg,var(--accent),#c89f94);
-  padding:6px 14px;
-  border-radius:20px;
-  color:white;
-  font-size:0.85rem;
+/* particles */
+.entity{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  pointer-events:none;
+  opacity:0.9;
 }
 
-/* =========================
-   PANELS (soft paper cards)
-========================= */
-
-.sidebar, .panel, .journal-box{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:18px;
-  box-shadow:var(--shadow);
-  backdrop-filter: blur(12px);
-}
-
-/* =========================
-   SIDEBAR
-========================= */
-
-.sidebar{
-  padding:80px 16px 20px;
-}
-
-.folder{
+/* UI */
+.panel{
+  background:#0b1020;
   padding:12px;
-  margin:6px 0;
-  border-left:4px solid var(--accent);
-  border-radius:10px;
-  background:rgba(255,255,255,0.5);
-  cursor:pointer;
-  font-style:italic;
-  transition:0.3s;
-}
-
-.folder:hover{
-  transform:translateX(4px);
-  background:rgba(176,125,98,0.1);
-}
-
-.folder.active{
-  background:rgba(176,125,98,0.2);
-  border-left:6px solid var(--accent);
-}
-
-.btn{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border:none;
-  border-radius:14px;
-  background:linear-gradient(135deg,var(--accent),#c89f94);
-  color:white;
-  cursor:pointer;
-  transition:0.3s;
-  font-family:inherit;
-}
-
-.btn:hover{
-  transform:translateY(-2px);
-}
-
-/* =========================
-   MAIN
-========================= */
-
-.main{
-  padding:80px 30px 30px;
-}
-
-.journal-box{
-  padding:24px;
+  display:flex;
+  flex-direction:column;
 }
 
 textarea{
-  width:100%;
-  min-height:180px;
+  flex:1;
+  background:#12182c;
   border:none;
-  outline:none;
-  background:transparent;
-  font-family:'Garamond', serif;
-  font-size:1.15rem;
-  line-height:1.9;
-  color:var(--text);
-}
-
-textarea::placeholder{
-  font-style:italic;
-  color:rgba(80,60,50,0.4);
-}
-
-/* =========================
-   GARDEN (wild meadow feel)
-========================= */
-
-.garden{
-  margin-top:20px;
-  min-height:300px;
-  border-radius:20px;
-  background:linear-gradient(to top, rgba(143,188,143,0.15), transparent);
-  position:relative;
-  overflow:hidden;
-}
-
-.plant{
-  position:absolute;
-  bottom:0;
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-6px)}
-}
-
-.plant-head{
-  border-radius:50% 60% 55% 65%;
-}
-
-.plant-stem{
-  width:3px;
-  margin:0 auto;
-  background:linear-gradient(to top,#5c7c5c,#8fbc8f);
-}
-
-/* =========================
-   BUTTONS / TOGGLES
-========================= */
-
-.toggle-btn{
-  padding:8px;
-  border-radius:10px;
-  border:none;
-  background:rgba(176,125,98,0.15);
-  cursor:pointer;
-}
-
-.toggle-btn.active{
-  background:var(--accent);
   color:white;
-}
-
-/* =========================
-   SHOP / ACHIEVEMENTS
-========================= */
-
-.shop-item{
-  background:rgba(255,255,255,0.4);
-  padding:12px;
-  border-radius:12px;
-  margin:8px 0;
-}
-
-.achievement{
   padding:10px;
-  border-radius:12px;
-  background:rgba(176,125,98,0.1);
-  margin:8px 0;
+  outline:none;
+  resize:none;
+  font-size:14px;
+  border-radius:8px;
 }
 
-.achievement.locked{
-  opacity:0.4;
+/* chat */
+.chat{
+  height:200px;
+  overflow:auto;
+  margin-top:10px;
+  background:#0f152a;
+  padding:10px;
+  border-radius:8px;
+  font-size:13px;
 }
 
-/* =========================
-   EFFECTS (softened)
-========================= */
-
-.shimmer, .spark{
-  opacity:0.6;
+/* coin */
+.coin{
+  padding:8px;
+  background:#1f2a44;
+  margin-bottom:8px;
+  border-radius:8px;
 }
-
-.trail{
-  background:rgba(176,125,98,0.5);
-}
-
-.notification{
-  position:fixed;
-  bottom:30px;
-  left:50%;
-  transform:translateX(-50%) translateY(100px);
-  background:var(--card);
-  padding:14px 20px;
-  border-radius:14px;
-  transition:0.4s;
-}
-
-.notification.show{
-  transform:translateX(-50%) translateY(0);
-}
-
 </style>
 </head>
 
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="logo">🌿 Cottage Journal</div>
-  <div>
-    <span class="stat">🔥 <span id="streak">0</span></span>
-    <span class="stat">🪙 <span id="coins">0</span></span>
+<div class="wrap">
+
+  <!-- WORLD -->
+  <div class="world" id="world">
+    <div class="avatar" id="avatar">🙂</div>
   </div>
-</div>
 
-<div class="app">
+  <!-- PANEL -->
+  <div class="panel">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <h3>📖 Entries</h3>
-    <div id="folders"></div>
-    <button class="btn" onclick="newEntry()">✨ New Entry</button>
+    <div class="coin">🪙 Coins: <span id="coins">0</span></div>
 
-    <h3>🌙 Mode</h3>
-    <button onclick="setMode('day')" class="toggle-btn" id="dayBtn">☀️ Day</button>
-    <button onclick="setMode('night')" class="toggle-btn" id="nightBtn">🌙 Night</button>
+    <textarea id="text" placeholder="Write your thoughts..."></textarea>
 
-    <h3>🌦 Weather</h3>
-    <button onclick="setWeather('sun')" class="toggle-btn">☀️</button>
-    <button onclick="setWeather('rain')" class="toggle-btn">🌧</button>
-    <button onclick="setWeather('fog')" class="toggle-btn">🌫</button>
-  </aside>
+    <div class="chat" id="chat"></div>
 
-  <!-- MAIN -->
-  <main class="main">
-    <div class="journal-box">
-      <h2 id="entryTitle">Today</h2>
-      <textarea id="journalText" placeholder="Write your thoughts like pressed flowers in a book..."></textarea>
-      <div id="wordCount">0 words</div>
-    </div>
-
-    <div class="garden" id="garden"></div>
-  </main>
-
-  <!-- RIGHT PANEL -->
-  <aside class="panel">
-    <h3>🛒 Shop</h3>
-    <div id="shop"></div>
-
-    <h3>🏆 Achievements</h3>
-    <div id="achievements"></div>
-  </aside>
+  </div>
 
 </div>
-
-<!-- NOTIFICATION -->
-<div class="notification" id="notification"></div>
 
 <script>
-/* ===== Your original JS is still valid =====
-   (unchanged logic, only visuals updated)
-   Keep your full script here as-is from original.
-*/
+
+/* =========================
+   STATE ENGINE
+========================= */
+
+let coins = 0;
+
+let memory = JSON.parse(localStorage.getItem("memoryWorld") || JSON.stringify({
+  messages: [],
+  moodHistory: []
+}));
+
+let entities = [];
+
+const world = document.getElementById("world");
+const avatar = document.getElementById("avatar");
+const chat = document.getElementById("chat");
+const text = document.getElementById("text");
+
+/* =========================
+   EMOTION ENGINE
+========================= */
+
+function getMood(t){
+  t = t.toLowerCase();
+
+  if(t.includes("love") || t.includes("happy")) return "happy";
+  if(t.includes("sad") || t.includes("lonely")) return "sad";
+  if(t.includes("angry")) return "angry";
+  if(t.includes("calm")) return "calm";
+  return "neutral";
+}
+
+/* =========================
+   AVATAR SYSTEM
+========================= */
+
+function updateAvatar(mood){
+
+  const moods = {
+    happy:"😄",
+    sad:"😔",
+    angry:"😠",
+    calm:"😌",
+    neutral:"🙂"
+  };
+
+  avatar.innerText = moods[mood] || "🙂";
+
+  if(mood === "happy"){
+    avatar.style.background = "linear-gradient(145deg,#f472b6,#facc15)";
+  }
+  else if(mood === "sad"){
+    avatar.style.background = "linear-gradient(145deg,#60a5fa,#1e3a8a)";
+  }
+  else if(mood === "angry"){
+    avatar.style.background = "linear-gradient(145deg,#f87171,#7f1d1d)";
+  }
+  else {
+    avatar.style.background = "linear-gradient(145deg,#5eead4,#60a5fa)";
+  }
+}
+
+/* =========================
+   MEMORY SYSTEM
+========================= */
+
+function saveMemory(text,mood){
+
+  memory.messages.push({text,mood,time:Date.now()});
+  memory.moodHistory.push(mood);
+
+  if(memory.messages.length > 50) memory.messages.shift();
+
+  localStorage.setItem("memoryWorld", JSON.stringify(memory));
+}
+
+/* =========================
+   THOUGHT BEINGS (PHYSICS)
+========================= */
+
+function spawnEntities(text,mood){
+
+  let words = text.split(/\s+/);
+
+  words.forEach(w => {
+    if(!w) return;
+
+    entities.push({
+      x:Math.random()*window.innerWidth*0.6,
+      y:Math.random()*window.innerHeight,
+      vx:(Math.random()-0.5)*2,
+      vy:(Math.random()-0.5)*2,
+      mood
+    });
+  });
+}
+
+/* physics loop */
+function updateEntities(){
+
+  world.querySelectorAll(".entity").forEach(e=>e.remove());
+
+  entities.forEach(ent => {
+
+    // simple physics
+    ent.x += ent.vx;
+    ent.y += ent.vy;
+
+    // boundaries
+    if(ent.x<0 || ent.x>window.innerWidth*0.6) ent.vx *= -1;
+    if(ent.y<0 || ent.y>window.innerHeight) ent.vy *= -1;
+
+    // mood behavior
+    if(ent.mood === "happy") ent.vx *= 1.01;
+    if(ent.mood === "sad") ent.vx *= 0.99;
+    if(ent.mood === "angry") ent.vx *= 1.03;
+
+    let d = document.createElement("div");
+    d.className = "entity";
+
+    if(ent.mood === "happy") d.style.background="#facc15";
+    else if(ent.mood === "sad") d.style.background="#60a5fa";
+    else if(ent.mood === "angry") d.style.background="#f87171";
+    else d.style.background="#34d399";
+
+    d.style.left = ent.x + "px";
+    d.style.top = ent.y + "px";
+
+    world.appendChild(d);
+  });
+
+  requestAnimationFrame(updateEntities);
+}
+
+/* =========================
+   AUDIO ENGINE
+========================= */
+
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq){
+
+  let osc = audioCtx.createOscillator();
+  let gain = audioCtx.createGain();
+
+  osc.frequency.value = freq;
+  osc.type = "sine";
+
+  gain.gain.value = 0.03;
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.05);
+}
+
+function moodSound(mood){
+  if(mood==="happy") playTone(600);
+  else if(mood==="sad") playTone(200);
+  else if(mood==="angry") playTone(120);
+  else playTone(400);
+}
+
+/* =========================
+   INPUT SYSTEM
+========================= */
+
+text.addEventListener("input", () => {
+
+  coins++;
+  document.getElementById("coins").innerText = coins;
+
+  let mood = getMood(text.value);
+
+  updateAvatar(mood);
+  saveMemory(text.value,mood);
+  spawnEntities(text.value,mood);
+  moodSound(mood);
+
+  addChat("You", text.value.slice(-30));
+});
+
+/* =========================
+   CHAT SYSTEM
+========================= */
+
+function addChat(who,msg){
+
+  let div = document.createElement("div");
+  div.innerText = `${who}: ${msg}`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+
+  if(who==="You"){
+    setTimeout(()=>{
+      let last = memory.messages[memory.messages.length-1];
+      if(!last) return;
+
+      let reply =
+        last.mood==="happy" ? "You feel bright today." :
+        last.mood==="sad" ? "I notice a heaviness in you." :
+        last.mood==="angry" ? "That energy is strong." :
+        "I'm here with you.";
+
+      addChat("AI",reply);
+    },600);
+  }
+}
+
+/* =========================
+   START SYSTEMS
+========================= */
+
+updateEntities();
+
 </script>
 
 </body>
